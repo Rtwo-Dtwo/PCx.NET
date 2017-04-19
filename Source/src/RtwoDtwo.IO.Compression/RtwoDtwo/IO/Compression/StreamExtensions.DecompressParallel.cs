@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -42,16 +41,21 @@ namespace RtwoDtwo.IO.Compression
 				PropagateCompletion = true
 			});
 
-			using (var reader = new BinaryReader(source, Encoding.UTF8, leaveOpen: true))
-			{
-				while (reader.BaseStream.Position < reader.BaseStream.Length)
-				{
-					var count = reader.ReadInt32();
-					
-					var buffer = reader.ReadBytes(count);
+			var lengthBytes = new byte[4];
 
-					await bufferBlock.SendAsync(buffer);
+			while (source.Read(lengthBytes, 0, lengthBytes.Length) == lengthBytes.Length)
+			{
+				if (!BitConverter.IsLittleEndian)
+				{
+					Array.Reverse(lengthBytes);
 				}
+
+				var length = BitConverter.ToInt32(lengthBytes, 0);
+
+				var buffer = new byte[length];
+				source.Read(buffer, 0, buffer.Length);
+
+				await bufferBlock.SendAsync(buffer);
 			}
 
 			bufferBlock.Complete();

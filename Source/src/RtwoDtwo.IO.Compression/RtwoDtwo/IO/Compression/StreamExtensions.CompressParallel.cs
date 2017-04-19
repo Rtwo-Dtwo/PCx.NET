@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -73,12 +72,16 @@ namespace RtwoDtwo.IO.Compression
 
 		private static void Write(Stream destination, byte[] buffer)
 		{
-			using (var writer = new BinaryWriter(destination, Encoding.UTF8, leaveOpen: true))
+			var lengthBytes = BitConverter.GetBytes(buffer.Length);
+			
+			if (!BitConverter.IsLittleEndian)
 			{
-				writer.Write(buffer.Length);
-
-				writer.Write(buffer);
+				Array.Reverse(lengthBytes);
 			}
+
+			destination.Write(lengthBytes, 0, lengthBytes.Length);
+
+			destination.Write(buffer, 0, buffer.Length);
 		}
 	
 		#endregion
