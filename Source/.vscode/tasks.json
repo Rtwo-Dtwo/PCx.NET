@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}/tests/RtwoDtwo.IO.Compression.Tests.csproj"
+                "${workspaceRoot}/RtwoDtwo.IO.Compression.sln"
             ],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"
