@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 using Xunit;
 
-using RtwoDtwo.IO.Compression;
-
 namespace RtwoDtwo.IO.Compression.Tests
 {
-    public class StreamExtensionsTest
+	public class StreamExtensionsTest
     {
         #region Tests
 
