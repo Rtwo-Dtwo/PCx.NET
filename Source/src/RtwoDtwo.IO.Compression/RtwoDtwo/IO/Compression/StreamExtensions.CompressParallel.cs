@@ -70,18 +70,25 @@ namespace RtwoDtwo.IO.Compression
 			}
 		}
 
-		private static void Write(Stream destination, byte[] buffer)
+		private static void Write(Stream stream, byte[] buffer)
 		{
-			var lengthBytes = BitConverter.GetBytes(buffer.Length);
+			stream.Write(buffer.Length);
+			
+			stream.Write(~buffer.Length);
+
+			stream.Write(buffer, 0, buffer.Length);
+		}
+
+		private static void Write(this Stream stream, int value)
+		{
+			var bytes = BitConverter.GetBytes(value);
 			
 			if (!BitConverter.IsLittleEndian)
 			{
-				Array.Reverse(lengthBytes);
+				Array.Reverse(bytes);
 			}
 
-			destination.Write(lengthBytes, 0, lengthBytes.Length);
-
-			destination.Write(buffer, 0, buffer.Length);
+			stream.Write(bytes, 0, bytes.Length);
 		}
 	
 		#endregion

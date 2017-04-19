@@ -41,16 +41,12 @@ namespace RtwoDtwo.IO.Compression
 				PropagateCompletion = true
 			});
 
-			var lengthBytes = new byte[4];
-
-			while (source.Read(lengthBytes, 0, lengthBytes.Length) == lengthBytes.Length)
+			while (source.TryRead(out var length))
 			{
-				if (!BitConverter.IsLittleEndian)
+				if (!source.TryRead(out var complementLength) || (~length != complementLength))
 				{
-					Array.Reverse(lengthBytes);
+					throw new IOException("Source stream is not well-formed");
 				}
-
-				var length = BitConverter.ToInt32(lengthBytes, 0);
 
 				var buffer = new byte[length];
 				source.Read(buffer, 0, buffer.Length);
@@ -77,6 +73,27 @@ namespace RtwoDtwo.IO.Compression
 					}
 				}
 			}
+		}
+
+		private static bool TryRead(this Stream stream, out int value)
+		{
+			var bytes = new byte[4];
+
+			if (stream.Read(bytes, 0, bytes.Length) == bytes.Length)
+			{
+				if (!BitConverter.IsLittleEndian)
+				{
+					Array.Reverse(bytes);
+				}
+
+				value = BitConverter.ToInt32(bytes, 0);
+
+				return true;
+			}
+
+			value = default(int);
+
+			return false;
 		}
 
 		#endregion
