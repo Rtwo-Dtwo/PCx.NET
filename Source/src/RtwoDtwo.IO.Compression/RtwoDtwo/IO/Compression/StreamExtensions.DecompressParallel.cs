@@ -10,7 +10,7 @@ namespace RtwoDtwo.IO.Compression
 	{
 		#region Methods
 
-		public static async Task DecompressParallel(this Stream source, Stream destination)
+		public static async Task DecompressParallelAsync(this Stream source, Stream destination)
 		{
 			int boundedCapacity = Environment.ProcessorCount * 2;
 

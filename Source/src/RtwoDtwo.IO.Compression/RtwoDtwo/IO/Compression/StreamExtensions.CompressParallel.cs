@@ -10,7 +10,7 @@ namespace RtwoDtwo.IO.Compression
 	{
 		#region Methods
 
-		public static async Task CompressParallel(this Stream source, Stream destination, CompressionLevel compressionLevel, int bufferSize)
+		public static async Task CompressParallelAsync(this Stream source, Stream destination, CompressionLevel compressionLevel, int bufferSize)
 		{
 			var compressGraph = new CompressGraph(destination, compressionLevel);
 

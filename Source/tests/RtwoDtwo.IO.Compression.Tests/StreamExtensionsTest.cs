@@ -25,7 +25,7 @@ namespace RtwoDtwo.IO.Compression.Tests
             {
                 using (var compressed = new MemoryStream())
                 {
-                    await source.CompressParallel(compressed, compressionLevel, 128 * 1024);
+                    await source.CompressParallelAsync(compressed, compressionLevel, 128 * 1024);
 
                     compressedData = compressed.ToArray();
                 }
@@ -47,7 +47,7 @@ namespace RtwoDtwo.IO.Compression.Tests
             {
                 using (var destination = new MemoryStream())
                 {
-                    await source.CompressParallel(destination, CompressionLevel.NoCompression, 128 * 1024);
+                    await source.CompressParallelAsync(destination, CompressionLevel.NoCompression, 128 * 1024);
 
                     compressedData = destination.ToArray();
                 }
@@ -72,13 +72,13 @@ namespace RtwoDtwo.IO.Compression.Tests
             {
                 using (var compressed = new MemoryStream())
                 {
-                    await source.CompressParallel(compressed, compressionLevel, 128 * 1024);
+                    await source.CompressParallelAsync(compressed, compressionLevel, 128 * 1024);
 
                     compressed.Seek(0, SeekOrigin.Begin);
 
                     using (var decompressed = new MemoryStream())
                     {
-                        await compressed.DecompressParallel(decompressed);
+                        await compressed.DecompressParallelAsync(decompressed);
 
                         decompressedData = decompressed.ToArray();
                     }
