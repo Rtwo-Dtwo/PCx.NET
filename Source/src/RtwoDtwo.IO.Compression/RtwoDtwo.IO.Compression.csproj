@@ -7,4 +7,13 @@
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.7.0" />
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
+  <PropertyGroup>
+    <Title>Parallel Compression Extensions (PCx)</Title>
+    <Authors>Christian Winter (Rtwo-Dtwo)</Authors>
+    <Description></Description>
+    <Copyright></Copyright>
+    <PackageTags>IO;Zip;Parallel</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+  </PropertyGroup>
 </Project>
