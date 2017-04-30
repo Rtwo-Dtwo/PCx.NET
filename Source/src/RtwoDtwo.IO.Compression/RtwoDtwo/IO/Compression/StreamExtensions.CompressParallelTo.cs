@@ -23,8 +23,11 @@ namespace RtwoDtwo.IO.Compression
 		/// <param name="compressionLevel">The applied compression level.</param>
 		/// <param name="bufferSize">The size of the buffer. This value must be greater than zero.</param>
 		/// <returns>The awaitable <see cref="Task"/> to synchronize the operation.</returns>
+		/// <exception cref="System.ArgumentNullException"><paramref name="source"/> or <paramref name="destination"/> is null.</exception>
+		/// <exception cref="System.NotSupportedException"><paramref name="source"/> does not support reading or <paramref name="destination"/> does not support writing.</exception>
+		/// <exception cref="System.ArgumentOutOfRangeException"><paramref name="bufferSize"/> is negative or zero.</exception>
 		/// <remarks>
-		/// To decompress the content the method <see cref="DecompressParallelAsync"/> must be used.
+		/// To decompress the content the method <see cref="DecompressParallelToAsync"/> must be used.
 		/// <para/>
 		/// The specified <paramref name="bufferSize"/> affects the parallelization potential and
 		/// and should be selected in dependency of the size of the <paramref name="source"/> stream.
@@ -32,9 +35,6 @@ namespace RtwoDtwo.IO.Compression
 		/// Copying begins at the current position in the <paramref name="source"/> stream,
 		/// and does not reset the position of the <paramref name="destination"/> stream after the copy operation is complete.
 		/// </remarks>
-		/// <exception cref="System.ArgumentNullException"><paramref name="source"/> or <paramref name="destination"/> is null.</exception>
-		/// <exception cref="System.NotSupportedException"><paramref name="source"/> does not support reading or <paramref name="destination"/> does not support writing.</exception>
-		/// <exception cref="System.ArgumentOutOfRangeException"><paramref name="bufferSize"/> is negative or zero.</exception>
 		public static async Task CompressParallelToAsync(this Stream source, Stream destination, CompressionLevel compressionLevel, int bufferSize)
 		{
 			#region Contracts

@@ -11,6 +11,23 @@ namespace RtwoDtwo.IO.Compression
 	{
 		#region Methods
 
+		/// <summary>
+		/// Reads the compressed bytes from the <paramref name="source"/> stream and
+		/// writes them decompressed to the <paramref name="destination"/> stream.
+		/// <para/>
+		/// This operation is optimized by using parallel algorithms.
+		/// </summary>
+		/// <param name="source">The stream from which the compressed content will be read.</param>
+		/// <param name="destination">The stream to which the decompressed content will be written.</param>
+		/// <returns>The awaitable <see cref="Task"/> to synchronize the operation.</returns>
+		/// <exception cref="System.ArgumentNullException"><paramref name="source"/> or <paramref name="destination"/> is null.</exception>
+		/// <exception cref="System.NotSupportedException"><paramref name="source"/> does not support reading or <paramref name="destination"/> does not support writing.</exception>
+		/// <remarks>
+		/// The compressed content must be created by the method <see cref="CompressParallelToAsync"/>.
+		/// <para/>
+		/// Copying begins at the current position in the <paramref name="source"/> stream,
+		/// and does not reset the position of the <paramref name="destination"/> stream after the copy operation is complete.
+		/// </remarks>
 		public static async Task DecompressParallelToAsync(this Stream source, Stream destination)
 		{
 			#region Contracts
