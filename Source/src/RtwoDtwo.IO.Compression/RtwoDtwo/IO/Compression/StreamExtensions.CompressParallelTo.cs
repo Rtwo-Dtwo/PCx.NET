@@ -38,7 +38,37 @@ namespace RtwoDtwo.IO.Compression
 		/// Copying begins at the current position in the <paramref name="source"/> stream,
 		/// and does not reset the position of the <paramref name="destination"/> stream after the copy operation is complete.
 		/// </remarks>
-		public static async Task CompressParallelToAsync(this Stream source, Stream destination, CompressionLevel compressionLevel, int bufferSize)
+		public static Task CompressParallelToAsync(this Stream source, Stream destination, CompressionLevel compressionLevel, int bufferSize)
+		{
+			return CompressParallelToAsync(source, destination, compressionLevel, bufferSize, new Progress<double>());
+		}
+
+		/// <summary>
+		/// Reads the bytes from the <paramref name="source"/> stream and
+		/// writes them compressed to the <paramref name="destination"/> stream,
+		/// using a specified <paramref name="compressionLevel"/> and <paramref name="bufferSize"/>.
+		/// <para/>
+		/// This operation is optimized by using parallel algorithms.
+		/// </summary>
+		/// <param name="source">The stream from which the content will be read.</param>
+		/// <param name="destination">The stream to which the content will be compressed.</param>
+		/// <param name="compressionLevel">The applied compression level.</param>
+		/// <param name="bufferSize">The size of the buffer. This value must be greater than zero.</param>
+		/// <param name="progress">The progress that is used for progress reporting.</param>
+		/// <returns>The awaitable <see cref="Task"/> to synchronize the operation.</returns>
+		/// <exception cref="System.ArgumentNullException"><paramref name="source"/>, <paramref name="destination"/> or <paramref name="progress"/> is null.</exception>
+		/// <exception cref="System.NotSupportedException"><paramref name="source"/> does not support reading or <paramref name="destination"/> does not support writing.</exception>
+		/// <exception cref="System.ArgumentOutOfRangeException"><paramref name="bufferSize"/> is negative or zero.</exception>
+		/// <remarks>
+		/// To decompress the content the method <see cref="DecompressParallelToAsync"/> must be used.
+		/// <para/>
+		/// The specified <paramref name="bufferSize"/> affects the parallelization potential and
+		/// and should be selected in dependency of the size of the <paramref name="source"/> stream.
+		/// <para/>
+		/// Copying begins at the current position in the <paramref name="source"/> stream,
+		/// and does not reset the position of the <paramref name="destination"/> stream after the copy operation is complete.
+		/// </remarks>
+		public static async Task CompressParallelToAsync(this Stream source, Stream destination, CompressionLevel compressionLevel, int bufferSize, IProgress<double> progress)
 		{
 			#region Contracts
 
@@ -67,11 +97,16 @@ namespace RtwoDtwo.IO.Compression
 				throw new ArgumentOutOfRangeException("bufferSize is negative or zero", "bufferSize");
 			}
 
+			if (progress == null)
+			{
+				throw new ArgumentNullException("progress");
+			}
+
 			Contract.EndContractBlock();
 
 			#endregion
 			
-			var compressGraph = new CompressGraph(destination, compressionLevel);
+			var compressGraph = new CompressGraph(destination, compressionLevel, progress);
 
 			var readBuffer = new byte[bufferSize];
 			int readCount;
@@ -79,14 +114,24 @@ namespace RtwoDtwo.IO.Compression
 			while ((readCount = source.Read(readBuffer, 0, bufferSize)) != 0)
 			{
 				var buffer = new byte[readCount];
-				Buffer.BlockCopy(readBuffer, 0, buffer, 0, readCount);
+				System.Buffer.BlockCopy(readBuffer, 0, buffer, 0, readCount);
 
-				await compressGraph.SendAsync(buffer);
+				await compressGraph.SendAsync(new Buffer(buffer, source.GetProgress()));
 			}
 
 			await compressGraph.CompleteAsync();
 		}
 	
+		private static double? GetProgress(this Stream stream)
+		{
+			if (stream.CanSeek)
+			{
+				return stream.Position / stream.Length;
+			}
+
+			return null;
+		}
+
 		#endregion
 	}
 }

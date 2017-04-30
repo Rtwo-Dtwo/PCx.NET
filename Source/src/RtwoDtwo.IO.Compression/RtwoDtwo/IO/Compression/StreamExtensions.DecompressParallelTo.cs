@@ -23,7 +23,7 @@ namespace RtwoDtwo.IO.Compression
 		/// <exception cref="System.ArgumentNullException"><paramref name="source"/> or <paramref name="destination"/> is null.</exception>
 		/// <exception cref="System.NotSupportedException"><paramref name="source"/> does not support reading or <paramref name="destination"/> does not support writing.</exception>
 		/// <remarks>
-		/// The compressed content must be created by the method <see cref="CompressParallelToAsync"/>.
+		/// The compressed content must be created by the method <see cref="CompressParallelToAsync(System.IO.Stream, System.IO.Stream, System.IO.Compression.CompressionLevel, int, System.IProgress{double})"/>.
 		/// <para/>
 		/// Copying begins at the current position in the <paramref name="source"/> stream,
 		/// and does not reset the position of the <paramref name="destination"/> stream after the copy operation is complete.

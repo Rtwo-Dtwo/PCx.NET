@@ -10,7 +10,7 @@ namespace RtwoDtwo.IO.Compression
 	{
 		#region Fields
 
-		private readonly ITargetBlock<byte[]> _TargetBlock;
+		private readonly ITargetBlock<Buffer> _TargetBlock;
 
 		private readonly IDataflowBlock _CompleteBlock;
 
@@ -18,16 +18,16 @@ namespace RtwoDtwo.IO.Compression
 
 		#region Constructor
 
-		public CompressGraph(Stream stream, CompressionLevel compressionLevel)
+		public CompressGraph(Stream stream, CompressionLevel compressionLevel, IProgress<double> progress)
 		{
-			(_TargetBlock, _CompleteBlock) = BuildGraph(stream, compressionLevel);
+			(_TargetBlock, _CompleteBlock) = BuildGraph(stream, compressionLevel, progress);
 		}
 
 		#endregion
 
 		#region Methods
 
-		public Task SendAsync(byte[] buffer)
+		public Task SendAsync(Buffer buffer)
 		{
 			return _TargetBlock.SendAsync(buffer);
 		}
@@ -39,22 +39,22 @@ namespace RtwoDtwo.IO.Compression
 			return _CompleteBlock.Completion;
 		}
 
-		private static (ITargetBlock<byte[]> targetBlock, IDataflowBlock completeBlock) BuildGraph(Stream stream, CompressionLevel compressionLevel)
+		private static (ITargetBlock<Buffer> targetBlock, IDataflowBlock completeBlock) BuildGraph(Stream stream, CompressionLevel compressionLevel, IProgress<double> progress)
 		{
 			int boundedCapacity = Environment.ProcessorCount * 2;
 
-			var bufferBlock = new BufferBlock<byte[]>(new DataflowBlockOptions()
+			var bufferBlock = new BufferBlock<Buffer>(new DataflowBlockOptions()
 			{
 				BoundedCapacity = boundedCapacity
 			});
 
-			var compressBlock = new TransformBlock<byte[], byte[]>(buffer => Compress(buffer, compressionLevel), new ExecutionDataflowBlockOptions
+			var compressBlock = new TransformBlock<Buffer, Buffer>(buffer => Compress(buffer, compressionLevel), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
 				MaxDegreeOfParallelism = Environment.ProcessorCount
 			});
 
-			var writerBlock = new ActionBlock<byte[]>(buffer => Write(stream, buffer), new ExecutionDataflowBlockOptions
+			var writerBlock = new ActionBlock<Buffer>(buffer => Write(stream, buffer, progress), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
 				SingleProducerConstrained = true
@@ -73,26 +73,31 @@ namespace RtwoDtwo.IO.Compression
 			return (targetBlock: bufferBlock, completeBlock: writerBlock);
 		}
 
-		private static byte[] Compress(byte[] buffer, CompressionLevel compressionLevel)
+		private static Buffer Compress(Buffer buffer, CompressionLevel compressionLevel)
 		{
 			using (var destination = new MemoryStream())
 			{
 				using (var deflate = new DeflateStream(destination, compressionLevel, leaveOpen: true))
 				{
-					deflate.Write(buffer, 0, buffer.Length);
+					deflate.Write(buffer.Bytes, 0, buffer.Bytes.Length);
 				}
 
-				return destination.ToArray();
+				return new Buffer(destination.ToArray(), buffer.Progress);
 			}
 		}
 
-		private static void Write(Stream stream, byte[] buffer)
+		private static void Write(Stream stream, Buffer buffer, IProgress<double> progress)
 		{
-			Write(stream, buffer.Length);
+			Write(stream, buffer.Bytes.Length);
 			
-			Write(stream, ~buffer.Length);
+			Write(stream, ~buffer.Bytes.Length);
 
-			stream.Write(buffer, 0, buffer.Length);
+			stream.Write(buffer.Bytes, 0, buffer.Bytes.Length);
+
+			if (buffer.Progress.HasValue)
+			{
+				progress.Report(buffer.Progress.Value);
+			}
 		}
 
 		private static void Write(Stream stream, int value)

@@ -61,16 +61,17 @@ namespace RtwoDtwo.IO.Compression.Tests
         [Fact]
         public static async void CompressParallel_ArgumentValidation()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, new MemoryStream(), CompressionLevel.NoCompression, 1));
-            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), null, CompressionLevel.NoCompression, 1));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, new MemoryStream(), CompressionLevel.NoCompression, 1, new Progress<double>()));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), null, CompressionLevel.NoCompression, 1, new Progress<double>()));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), new MemoryStream(), CompressionLevel.NoCompression, 1, null));
 
             var closedStream = new MemoryStream();
             closedStream.Dispose();
 
-            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(closedStream, new MemoryStream(), CompressionLevel.NoCompression, 1));
-            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), closedStream, CompressionLevel.NoCompression, 1));
+            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(closedStream, new MemoryStream(), CompressionLevel.NoCompression, 1, new Progress<double>()));
+            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), closedStream, CompressionLevel.NoCompression, 1, new Progress<double>()));
 
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), new MemoryStream(), CompressionLevel.NoCompression, -73));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), new MemoryStream(), CompressionLevel.NoCompression, -73, new Progress<double>()));
         }
 
         [Theory]
