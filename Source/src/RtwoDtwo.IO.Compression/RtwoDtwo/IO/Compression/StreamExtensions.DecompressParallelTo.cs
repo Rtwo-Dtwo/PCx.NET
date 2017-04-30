@@ -11,7 +11,7 @@ namespace RtwoDtwo.IO.Compression
 	{
 		#region Methods
 
-		public static async Task DecompressParallelAsync(this Stream source, Stream destination)
+		public static async Task DecompressParallelToAsync(this Stream source, Stream destination)
 		{
 			#region Contracts
 
