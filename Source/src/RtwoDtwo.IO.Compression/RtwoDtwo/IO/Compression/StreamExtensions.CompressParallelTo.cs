@@ -7,10 +7,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace RtwoDtwo.IO.Compression
 {
-	/// <summary>
-	/// Provides a set of static methods for parallel compression and decompression of objects that implement <see cref="System.IO.Stream"/>.
-	/// </summary>
-	public static partial class StreamExtensions
+	partial class StreamExtensions
 	{
 		#region Methods
 
@@ -120,16 +117,6 @@ namespace RtwoDtwo.IO.Compression
 			}
 
 			await compressGraph.CompleteAsync();
-		}
-	
-		private static double? GetProgress(this Stream stream)
-		{
-			if (stream.CanSeek)
-			{
-				return stream.Position / stream.Length;
-			}
-
-			return null;
 		}
 
 		#endregion

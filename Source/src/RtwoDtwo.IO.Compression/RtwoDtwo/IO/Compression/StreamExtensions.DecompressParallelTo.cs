@@ -7,7 +7,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace RtwoDtwo.IO.Compression
 {
-	public static partial class StreamExtensions
+	partial class StreamExtensions
 	{
 		#region Methods
 
