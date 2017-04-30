@@ -25,7 +25,7 @@ namespace RtwoDtwo.IO.Compression.Tests
             {
                 using (var compressed = new MemoryStream())
                 {
-                    await source.CompressParallelAsync(compressed, compressionLevel, 128 * 1024);
+                    await source.CompressParallelToAsync(compressed, compressionLevel, 128 * 1024);
 
                     compressedData = compressed.ToArray();
                 }
@@ -47,7 +47,7 @@ namespace RtwoDtwo.IO.Compression.Tests
             {
                 using (var destination = new MemoryStream())
                 {
-                    await source.CompressParallelAsync(destination, CompressionLevel.NoCompression, 128 * 1024);
+                    await source.CompressParallelToAsync(destination, CompressionLevel.NoCompression, 128 * 1024);
 
                     compressedData = destination.ToArray();
                 }
@@ -61,16 +61,16 @@ namespace RtwoDtwo.IO.Compression.Tests
         [Fact]
         public static async void CompressParallel_ArgumentValidation()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelAsync(null, new MemoryStream(), CompressionLevel.NoCompression, 1));
-            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelAsync(new MemoryStream(), null, CompressionLevel.NoCompression, 1));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, new MemoryStream(), CompressionLevel.NoCompression, 1));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), null, CompressionLevel.NoCompression, 1));
 
             var closedStream = new MemoryStream();
             closedStream.Dispose();
 
-            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelAsync(closedStream, new MemoryStream(), CompressionLevel.NoCompression, 1));
-            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelAsync(new MemoryStream(), closedStream, CompressionLevel.NoCompression, 1));
+            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(closedStream, new MemoryStream(), CompressionLevel.NoCompression, 1));
+            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), closedStream, CompressionLevel.NoCompression, 1));
 
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => StreamExtensions.CompressParallelAsync(new MemoryStream(), new MemoryStream(), CompressionLevel.NoCompression, -73));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), new MemoryStream(), CompressionLevel.NoCompression, -73));
         }
 
         [Theory]
@@ -87,7 +87,7 @@ namespace RtwoDtwo.IO.Compression.Tests
             {
                 using (var compressed = new MemoryStream())
                 {
-                    await source.CompressParallelAsync(compressed, compressionLevel, 128 * 1024);
+                    await source.CompressParallelToAsync(compressed, compressionLevel, 128 * 1024);
 
                     compressed.Seek(0, SeekOrigin.Begin);
 
