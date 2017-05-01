@@ -11,6 +11,13 @@ namespace RtwoDtwo.IO.Compression
 			Progress = progress;
 		}
 
+		public Buffer(int size, double? progress)
+		{
+			Bytes = new byte[size];
+
+			Progress = progress;
+		}
+
 		#endregion
 
 		#region Properties
