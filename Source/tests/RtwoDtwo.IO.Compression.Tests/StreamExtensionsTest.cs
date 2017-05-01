@@ -107,14 +107,15 @@ namespace RtwoDtwo.IO.Compression.Tests
         [Fact]
         public static async void DecompressParallel_ArgumentValidation()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, new MemoryStream()));
-            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, new MemoryStream(), new Progress<double>()));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), null, new Progress<double>()));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), new MemoryStream(), null));
 
             var closedStream = new MemoryStream();
             closedStream.Dispose();
 
-            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(closedStream, new MemoryStream()));
-            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), closedStream));
+            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(closedStream, new MemoryStream(), new Progress<double>()));
+            await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), closedStream, new Progress<double>()));
         }
 
         #endregion

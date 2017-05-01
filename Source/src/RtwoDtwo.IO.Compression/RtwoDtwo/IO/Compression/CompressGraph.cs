@@ -92,12 +92,7 @@ namespace RtwoDtwo.IO.Compression
 			
 			Write(stream, ~buffer.Bytes.Length);
 
-			stream.Write(buffer.Bytes, 0, buffer.Bytes.Length);
-
-			if (buffer.Progress.HasValue)
-			{
-				progress.Report(buffer.Progress.Value);
-			}
+			buffer.WriteTo(stream, progress);
 		}
 
 		private static void Write(Stream stream, int value)

@@ -27,7 +27,7 @@ namespace RtwoDtwo.IO.Compression
 		/// <exception cref="System.NotSupportedException"><paramref name="source"/> does not support reading or <paramref name="destination"/> does not support writing.</exception>
 		/// <exception cref="System.ArgumentOutOfRangeException"><paramref name="bufferSize"/> is negative or zero.</exception>
 		/// <remarks>
-		/// To decompress the content the method <see cref="DecompressParallelToAsync"/> must be used.
+		/// To decompress the content the method <see cref="DecompressParallelToAsync(System.IO.Stream, System.IO.Stream, System.IProgress{double})"/> must be used.
 		/// <para/>
 		/// The specified <paramref name="bufferSize"/> affects the parallelization potential and
 		/// and should be selected in dependency of the size of the <paramref name="source"/> stream.
@@ -37,7 +37,7 @@ namespace RtwoDtwo.IO.Compression
 		/// </remarks>
 		public static Task CompressParallelToAsync(this Stream source, Stream destination, CompressionLevel compressionLevel, int bufferSize)
 		{
-			return CompressParallelToAsync(source, destination, compressionLevel, bufferSize, new Progress<double>());
+			return source.CompressParallelToAsync(destination, compressionLevel, bufferSize, new Progress<double>());
 		}
 
 		/// <summary>
@@ -57,7 +57,7 @@ namespace RtwoDtwo.IO.Compression
 		/// <exception cref="System.NotSupportedException"><paramref name="source"/> does not support reading or <paramref name="destination"/> does not support writing.</exception>
 		/// <exception cref="System.ArgumentOutOfRangeException"><paramref name="bufferSize"/> is negative or zero.</exception>
 		/// <remarks>
-		/// To decompress the content the method <see cref="DecompressParallelToAsync"/> must be used.
+		/// To decompress the content the method <see cref="DecompressParallelToAsync(System.IO.Stream, System.IO.Stream, System.IProgress{double})"/> must be used.
 		/// <para/>
 		/// The specified <paramref name="bufferSize"/> affects the parallelization potential and
 		/// and should be selected in dependency of the size of the <paramref name="source"/> stream.

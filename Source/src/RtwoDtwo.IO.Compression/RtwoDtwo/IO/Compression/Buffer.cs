@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace RtwoDtwo.IO.Compression
 {
 	internal sealed class Buffer
@@ -30,6 +33,20 @@ namespace RtwoDtwo.IO.Compression
 		public double? Progress
 		{
 			get;
+		}
+
+		#endregion
+
+		#region Methods
+
+		public void WriteTo(Stream stream, IProgress<double> progress)
+		{
+			stream.Write(Bytes, 0, Bytes.Length);
+
+			if (Progress.HasValue)
+			{
+				progress.Report(Progress.Value);
+			}
 		}
 
 		#endregion

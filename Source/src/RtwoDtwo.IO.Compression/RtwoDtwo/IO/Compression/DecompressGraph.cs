@@ -10,7 +10,7 @@ namespace RtwoDtwo.IO.Compression
 	{
 		#region Fields
 
-		private readonly ITargetBlock<byte[]> _TargetBlock;
+		private readonly ITargetBlock<Buffer> _TargetBlock;
 
 		private readonly IDataflowBlock _CompleteBlock;
 
@@ -18,16 +18,16 @@ namespace RtwoDtwo.IO.Compression
 
 		#region Constructor
 
-		public DecompressGraph(Stream stream)
+		public DecompressGraph(Stream stream, IProgress<double> progress)
 		{
-			(_TargetBlock, _CompleteBlock) = BuildGraph(stream);
+			(_TargetBlock, _CompleteBlock) = BuildGraph(stream, progress);
 		}
 
 		#endregion
 
 		#region Methods
 
-		public Task SendAsync(byte[] buffer)
+		public Task SendAsync(Buffer buffer)
 		{
 			return _TargetBlock.SendAsync(buffer);
 		}
@@ -39,22 +39,22 @@ namespace RtwoDtwo.IO.Compression
 			return _CompleteBlock.Completion;
 		}
 
-		private static (ITargetBlock<byte[]> targetBlock, IDataflowBlock completeBlock) BuildGraph(Stream stream)
+		private static (ITargetBlock<Buffer> targetBlock, IDataflowBlock completeBlock) BuildGraph(Stream stream, IProgress<double> progress)
 		{
 			int boundedCapacity = Environment.ProcessorCount * 2;
 
-			var bufferBlock = new BufferBlock<byte[]>(new DataflowBlockOptions()
+			var bufferBlock = new BufferBlock<Buffer>(new DataflowBlockOptions()
 			{
 				BoundedCapacity = boundedCapacity
 			});
 
-			var decompressBlock = new TransformBlock<byte[], byte[]>(buffer => Decompress(buffer), new ExecutionDataflowBlockOptions
+			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => Decompress(buffer), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
 				MaxDegreeOfParallelism = Environment.ProcessorCount
 			});
 
-			var writerBlock = new ActionBlock<byte[]>(buffer => stream.Write(buffer, 0, buffer.Length), new ExecutionDataflowBlockOptions
+			var writerBlock = new ActionBlock<Buffer>(buffer => buffer.WriteTo(stream, progress), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
 				SingleProducerConstrained = true
@@ -73,9 +73,9 @@ namespace RtwoDtwo.IO.Compression
 			return (targetBlock: bufferBlock, completeBlock: writerBlock);
 		}
 
-		private static byte[] Decompress(byte[] buffer)
+		private static Buffer Decompress(Buffer buffer)
 		{
-			using (var source = new MemoryStream(buffer))
+			using (var source = new MemoryStream(buffer.Bytes))
 			{
 				using (var deflate = new DeflateStream(source, CompressionMode.Decompress, leaveOpen: true))
 				{
@@ -83,7 +83,7 @@ namespace RtwoDtwo.IO.Compression
 					{
 						deflate.CopyTo(destination);
 
-						return destination.ToArray();
+						return new Buffer(destination.ToArray(), buffer.Progress);
 					}
 				}
 			}
