@@ -117,6 +117,8 @@ namespace RtwoDtwo.IO.Compression
 			}
 
 			await compressGraph.CompleteAsync();
+
+			progress.Report(1.0);
 		}
 
 		#endregion
