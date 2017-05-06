@@ -41,13 +41,30 @@ namespace RtwoDtwo.IO.Compression
 
 		#region Methods
 
-		public static Buffer Copy(byte[] source, int size, double? progress)
+		public static bool TryReadFrom(Stream stream, int size, out Buffer buffer)
 		{
-			var bytes = new byte[size];
+			var readBytes = new byte[size];			
+			int readCount = stream.Read(readBytes, 0, readBytes.Length);
 
-			System.Buffer.BlockCopy(source, 0, bytes, 0, size);
+			if (readCount == readBytes.Length)
+			{
+				buffer = new Buffer(readBytes, stream.GetProgress());
 
-			return new Buffer(bytes, progress);
+				return true;
+			}
+			else if (readCount > 0)
+			{
+				var bytes = new byte[readCount];
+				System.Buffer.BlockCopy(readBytes, 0, bytes, 0, readCount);
+
+				buffer = new Buffer(bytes, stream.GetProgress());
+
+				return true;
+			}
+
+			buffer = null;
+
+			return false;
 		}
 
 		public static Buffer ReadFrom(Stream stream, int size)

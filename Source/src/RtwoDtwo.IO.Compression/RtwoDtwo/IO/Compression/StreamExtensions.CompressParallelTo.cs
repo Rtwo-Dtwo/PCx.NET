@@ -105,13 +105,8 @@ namespace RtwoDtwo.IO.Compression
 			
 			var compressGraph = new CompressGraph(destination, compressionLevel, progress);
 
-			var readBuffer = new byte[bufferSize];
-			int readCount;
-
-			while ((readCount = source.Read(readBuffer, 0, bufferSize)) != 0)
+			while (Buffer.TryReadFrom(source, bufferSize, out var buffer))
 			{
-				var buffer = Buffer.Copy(readBuffer, readCount, source.GetProgress());
-
 				await compressGraph.SendAsync(buffer);
 			}
 
