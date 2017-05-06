@@ -110,8 +110,7 @@ namespace RtwoDtwo.IO.Compression
 
 			while ((readCount = source.Read(readBuffer, 0, bufferSize)) != 0)
 			{
-				var buffer = new Buffer(readCount, source.GetProgress());
-				System.Buffer.BlockCopy(readBuffer, 0, buffer.Bytes, 0, readCount);
+				var buffer = Buffer.Copy(readBuffer, readCount, source.GetProgress());
 
 				await compressGraph.SendAsync(buffer);
 			}

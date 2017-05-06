@@ -14,13 +14,6 @@ namespace RtwoDtwo.IO.Compression
 			Progress = progress;
 		}
 
-		public Buffer(int size, double? progress)
-		{
-			Bytes = new byte[size];
-
-			Progress = progress;
-		}
-
 		#endregion
 
 		#region Properties
@@ -38,6 +31,15 @@ namespace RtwoDtwo.IO.Compression
 		#endregion
 
 		#region Methods
+
+		public static Buffer Copy(byte[] source, int size, double? progress)
+		{
+			var bytes = new byte[size];
+
+			System.Buffer.BlockCopy(source, 0, bytes, 0, size);
+
+			return new Buffer(bytes, progress);
+		}
 
 		public void WriteTo(Stream stream, IProgress<double> progress)
 		{
