@@ -75,16 +75,13 @@ namespace RtwoDtwo.IO.Compression
 
 		private static Buffer Decompress(Buffer buffer)
 		{
-			using (var source = new MemoryStream(buffer.Bytes))
+			using (var deflate = new DeflateStream(buffer.ToStream(), CompressionMode.Decompress, leaveOpen: false))
 			{
-				using (var deflate = new DeflateStream(source, CompressionMode.Decompress, leaveOpen: true))
+				using (var destination = new MemoryStream())
 				{
-					using (var destination = new MemoryStream())
-					{
-						deflate.CopyTo(destination);
+					deflate.CopyTo(destination);
 
-						return new Buffer(destination.ToArray(), buffer.Progress);
-					}
+					return new Buffer(destination.ToArray(), buffer.Progress);
 				}
 			}
 		}

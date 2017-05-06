@@ -5,11 +5,17 @@ namespace RtwoDtwo.IO.Compression
 {
 	internal sealed class Buffer
 	{
+		#region Fields
+
+		private readonly byte[] _Bytes;
+
+		#endregion
+
 		#region Constructor
 
 		public Buffer(byte[] bytes, double? progress)
 		{
-			Bytes = bytes;
+			_Bytes = bytes;
 
 			Progress = progress;
 		}
@@ -18,9 +24,12 @@ namespace RtwoDtwo.IO.Compression
 
 		#region Properties
 
-		public byte[] Bytes
+		public int Size
 		{
-			get;
+			get
+			{
+				return _Bytes.Length;
+			}
 		}
 
 		public double? Progress
@@ -41,14 +50,24 @@ namespace RtwoDtwo.IO.Compression
 			return new Buffer(bytes, progress);
 		}
 
+		public void WriteTo(Stream stream)
+		{
+			WriteTo(stream, new Progress<double>());
+		}
+
 		public void WriteTo(Stream stream, IProgress<double> progress)
 		{
-			stream.Write(Bytes, 0, Bytes.Length);
+			stream.Write(_Bytes, 0, _Bytes.Length);
 
 			if (Progress.HasValue)
 			{
 				progress.Report(Progress.Value);
 			}
+		}
+
+		public Stream ToStream()
+		{
+			return new MemoryStream(_Bytes);
 		}
 
 		#endregion

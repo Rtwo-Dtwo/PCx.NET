@@ -79,7 +79,7 @@ namespace RtwoDtwo.IO.Compression
 			{
 				using (var deflate = new DeflateStream(destination, compressionLevel, leaveOpen: true))
 				{
-					deflate.Write(buffer.Bytes, 0, buffer.Bytes.Length);
+					buffer.WriteTo(deflate);
 				}
 
 				return new Buffer(destination.ToArray(), buffer.Progress);
@@ -88,9 +88,8 @@ namespace RtwoDtwo.IO.Compression
 
 		private static void Write(Stream stream, Buffer buffer, IProgress<double> progress)
 		{
-			Write(stream, buffer.Bytes.Length);
-			
-			Write(stream, ~buffer.Bytes.Length);
+			Write(stream, buffer.Size);			
+			Write(stream, ~buffer.Size);
 
 			buffer.WriteTo(stream, progress);
 		}
