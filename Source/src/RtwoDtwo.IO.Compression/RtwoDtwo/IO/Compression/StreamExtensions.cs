@@ -7,7 +7,7 @@ namespace RtwoDtwo.IO.Compression
 	/// </summary>
 	public static partial class StreamExtensions
 	{
-		private static double? GetProgress(this Stream stream)
+		internal static double? GetProgress(this Stream stream)
 		{
 			if (stream.CanSeek)
 			{

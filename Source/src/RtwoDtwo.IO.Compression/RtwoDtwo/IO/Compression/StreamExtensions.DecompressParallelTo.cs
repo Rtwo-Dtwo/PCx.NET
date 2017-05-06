@@ -93,10 +93,9 @@ namespace RtwoDtwo.IO.Compression
 					throw new IOException("Source stream is not well-formed");
 				}
 
-				var buffer = new byte[length];
-				source.Read(buffer, 0, buffer.Length);
+				var buffer = Buffer.ReadFrom(source, length);
 
-				await decompressGraph.SendAsync(new Buffer(buffer, source.GetProgress()));
+				await decompressGraph.SendAsync(buffer);
 			}
 
 			await decompressGraph.CompleteAsync();

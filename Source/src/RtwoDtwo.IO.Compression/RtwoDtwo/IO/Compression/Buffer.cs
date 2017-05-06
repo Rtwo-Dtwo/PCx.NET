@@ -50,6 +50,18 @@ namespace RtwoDtwo.IO.Compression
 			return new Buffer(bytes, progress);
 		}
 
+		public static Buffer ReadFrom(Stream stream, int size)
+		{
+			var bytes = new byte[size];
+
+			if (stream.Read(bytes, 0, bytes.Length) != size)
+			{
+				throw new IOException("Source stream is not well-formed");
+			}
+
+			return new Buffer(bytes, stream.GetProgress());
+		}
+
 		public void WriteTo(Stream stream)
 		{
 			WriteTo(stream, new Progress<double>());
