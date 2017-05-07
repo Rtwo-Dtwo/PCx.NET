@@ -39,7 +39,7 @@ namespace RtwoDtwo.IO.Compression.Tests
         [Fact]
         public static async void CompressParallel_NoCompression()
         {
-            var data = GenerateData(1024, 1024);
+            var data = GenerateData(1024, 1088);
             
             byte[] compressedData;
 
@@ -80,7 +80,7 @@ namespace RtwoDtwo.IO.Compression.Tests
         [InlineData(CompressionLevel.NoCompression)]
         public static async void DecompressParallel(CompressionLevel compressionLevel)
         {
-            var data = GenerateData(1024, 1024);
+            var data = GenerateData(1024, 1088);
             
             byte[] decompressedData;
 
