@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard1.5</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -17,7 +17,7 @@
     <Description>Provides parallel compression extensions to IO streams for .NET</Description>
     <Copyright>Copyright © 2017 Christian Winter. All rights reserved.</Copyright>
     <PackageTags>io;zip;parallel</PackageTags>
-    <PackageProjectUrl>https://github.com/Rtwo-Dtwo</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Rtwo-Dtwo/PCx.NET</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/Rtwo-Dtwo/PCx.NET/master/LICENSE</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
