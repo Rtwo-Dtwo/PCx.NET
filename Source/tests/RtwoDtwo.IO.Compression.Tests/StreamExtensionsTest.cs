@@ -17,7 +17,7 @@ namespace RtwoDtwo.IO.Compression.Tests
         [InlineData(CompressionLevel.Fastest)]
         public static async void CompressParallel(CompressionLevel compressionLevel)
         {
-            var data = GenerateData(1024, 1024);
+            var data = GenerateData(1024, 1088);
             
             byte[] compressedData;
 
