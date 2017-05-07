@@ -15,7 +15,7 @@ namespace RtwoDtwo.IO.Compression.Tests
         [Theory]
         [InlineData(CompressionLevel.Optimal)]
         [InlineData(CompressionLevel.Fastest)]
-        public static async void CompressParallel(CompressionLevel compressionLevel)
+        public static async void CompressParallel_SizeDecreases(CompressionLevel compressionLevel)
         {
             var data = GenerateData(1024, 1088);
             
@@ -37,7 +37,7 @@ namespace RtwoDtwo.IO.Compression.Tests
         }
 
         [Fact]
-        public static async void CompressParallel_NoCompression()
+        public static async void CompressParallel_NoCompression_SizeIncreases()
         {
             var data = GenerateData(1024, 1088);
             
@@ -78,7 +78,7 @@ namespace RtwoDtwo.IO.Compression.Tests
         [InlineData(CompressionLevel.Optimal)]
         [InlineData(CompressionLevel.Fastest)]
         [InlineData(CompressionLevel.NoCompression)]
-        public static async void DecompressParallel(CompressionLevel compressionLevel)
+        public static async void DecompressParallel_EqualsSourceData(CompressionLevel compressionLevel)
         {
             var data = GenerateData(1024, 1088);
             
