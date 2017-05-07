@@ -11,7 +11,7 @@ namespace RtwoDtwo.IO.Compression
 		{
 			if (stream.CanSeek)
 			{
-				return stream.Position / stream.Length;
+				return stream.Position / (double)stream.Length;
 			}
 
 			return null;
