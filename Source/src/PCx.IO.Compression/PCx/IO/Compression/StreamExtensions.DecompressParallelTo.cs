@@ -5,13 +5,13 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace RtwoDtwo.IO.Compression
+namespace PCx.IO.Compression
 {
 	partial class StreamExtensions
 	{
 		#region Methods
 
-/// <summary>
+		/// <summary>
 		/// Reads the compressed bytes from the <paramref name="source"/> stream and
 		/// writes them decompressed to the <paramref name="destination"/> stream.
 		/// <para/>

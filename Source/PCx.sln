@@ -4,11 +4,11 @@ VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5E97BBE5-E8EC-4E21-A66A-7B7E116D99A0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RtwoDtwo.IO.Compression", "src\RtwoDtwo.IO.Compression\RtwoDtwo.IO.Compression.csproj", "{5DEFE256-4E8D-43E1-904F-5A88E2623B86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCx.IO.Compression", "src\PCx.IO.Compression\PCx.IO.Compression.csproj", "{5DEFE256-4E8D-43E1-904F-5A88E2623B86}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{59AD7342-DB09-4BBC-A444-59B61D50534F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RtwoDtwo.IO.Compression.Tests", "tests\RtwoDtwo.IO.Compression.Tests\RtwoDtwo.IO.Compression.Tests.csproj", "{74475CD2-BAB2-41F7-BB9F-A5B3137240DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCx.IO.Compression.Tests", "tests\PCx.IO.Compression.Tests\PCx.IO.Compression.Tests.csproj", "{74475CD2-BAB2-41F7-BB9F-A5B3137240DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RtwoDtwo.IO.Compression\RtwoDtwo.IO.Compression.csproj" />
+    <ProjectReference Include="..\..\src\PCx.IO.Compression\PCx.IO.Compression.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,7 +4,7 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace RtwoDtwo.IO.Compression
+namespace PCx.IO.Compression
 {
 	internal sealed class CompressGraph
 	{

@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace RtwoDtwo.IO.Compression
+namespace PCx.IO.Compression
 {
 	/// <summary>
 	/// Provides a set of static methods for parallel compression and decompression of objects that implement <see cref="System.IO.Stream"/>.

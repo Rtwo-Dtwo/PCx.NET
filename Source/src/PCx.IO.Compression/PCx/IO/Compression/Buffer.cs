@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace RtwoDtwo.IO.Compression
+namespace PCx.IO.Compression
 {
 	internal sealed class Buffer
 	{

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Xunit;
 
-namespace RtwoDtwo.IO.Compression.Tests
+namespace PCx.IO.Compression.Tests
 {
 	public static class StreamExtensionsTest
     {
