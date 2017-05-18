@@ -1,10 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  
+  <Choose>
+    <When Condition="'$(EnableNETFramework)' == 'true'">
+      <PropertyGroup>
+        <TargetFrameworks>netstandard1.4;net461</TargetFrameworks>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <TargetFramework>netstandard1.4</TargetFramework>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.4;net461</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  
+    
   <ItemGroup>    
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.7.0" />
     <PackageReference Include="System.ValueTuple" Version="4.3.1" />
