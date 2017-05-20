@@ -13,6 +13,11 @@ namespace PCx.IO.Compression
 
 		#region Constructor
 
+		public Buffer(byte[] bytes)
+			: this(bytes, progress: null)
+		{
+		}
+
 		public Buffer(byte[] bytes, double? progress)
 		{
 			_Bytes = bytes;
@@ -43,7 +48,7 @@ namespace PCx.IO.Compression
 
 		public static bool TryReadFrom(Stream stream, int size, out Buffer buffer)
 		{
-			var readBytes = new byte[size];			
+			var readBytes = new byte[size];
 			int readCount = stream.Read(readBytes, 0, readBytes.Length);
 
 			if (readCount == readBytes.Length)
