@@ -85,17 +85,17 @@ namespace PCx.IO.Compression.Tests
 		[Fact]
 		public static async void CompressParallel_ArgumentValidation()
 		{
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, new MemoryStream(), CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), null, CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), new MemoryStream(), CompressionLevel.NoCompression, 1, null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, null, CompressionLevel.NoCompression, 1, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, Stream.Null, CompressionLevel.NoCompression, 1, null));
 
 			var closedStream = new MemoryStream();
 			closedStream.Dispose();
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(closedStream, new MemoryStream(), CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), closedStream, CompressionLevel.NoCompression, 1, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(closedStream, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, closedStream, CompressionLevel.NoCompression, 1, new Progress<double>()));
 
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => StreamExtensions.CompressParallelToAsync(new MemoryStream(), new MemoryStream(), CompressionLevel.NoCompression, -73, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, Stream.Null, CompressionLevel.NoCompression, -73, new Progress<double>()));
 		}
 
 		[Theory]
@@ -162,15 +162,15 @@ namespace PCx.IO.Compression.Tests
 		[Fact]
 		public static async void DecompressParallel_ArgumentValidation()
 		{
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, new MemoryStream(), new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), null, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), new MemoryStream(), null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, Stream.Null, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(Stream.Null, null, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(Stream.Null, Stream.Null, null));
 
 			var closedStream = new MemoryStream();
 			closedStream.Dispose();
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(closedStream, new MemoryStream(), new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(new MemoryStream(), closedStream, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(closedStream, Stream.Null, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(Stream.Null, closedStream, new Progress<double>()));
 		}
 
 		#endregion
