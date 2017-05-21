@@ -107,13 +107,13 @@ namespace PCx.IO.Compression
 			progress.Report(1.0);
 		}
 
-		private static async Task WriteAsync(this Stream destination, DecompressGraph decompressGraph, IProgress<double> progress)
+		private static async Task WriteAsync(this Stream stream, DecompressGraph decompressGraph, IProgress<double> progress)
 		{
 			while (await decompressGraph.OutputAvailableAsync())
 			{
 				var buffer = decompressGraph.Receive();
 
-				buffer.WriteTo(destination, progress);
+				buffer.WriteTo(stream, progress);
 			}
 		}
 
