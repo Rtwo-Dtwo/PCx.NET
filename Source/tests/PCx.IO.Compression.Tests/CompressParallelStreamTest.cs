@@ -12,7 +12,7 @@ namespace PCx.IO.Compression.Tests
 		#region Tests
 
 		[Fact]
-		public static async void CompressParallelStream_Validation()
+		public static void CompressParallelStream_Validation()
 		{
 			var dataList = new[]
 			{
@@ -38,11 +38,14 @@ namespace PCx.IO.Compression.Tests
 
 				compressed.Seek(0, SeekOrigin.Begin);
 
-				using (var decompressed = new MemoryStream())
+				using (var decompressStream = new DeflateParallelStream(compressed, CompressionMode.Decompress))
 				{
-					await compressed.DecompressParallelToAsync(decompressed);
+					using (var decompressed = new MemoryStream())
+					{
+						decompressStream.CopyTo(decompressed);
 
-					decompressedData = decompressed.ToArray();
+						decompressedData = decompressed.ToArray();
+					}
 				}
 			}
 

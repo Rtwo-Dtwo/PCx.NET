@@ -15,6 +15,8 @@ namespace PCx.IO.Compression
 
 		private readonly CompressStream _CompressStream;
 
+		private readonly DecompressStream _DecompressStream;
+
 		#endregion
 
 		#region Constructor
@@ -36,8 +38,15 @@ namespace PCx.IO.Compression
 
 					break;
 
+				case CompressionMode.Decompress:
+
+					_DecompressStream = new DecompressStream(_Stream);
+
+					break;
+
 				default:
-					throw new NotImplementedException();
+
+					throw new NotSupportedException();
 			}
 		}
 
@@ -84,7 +93,7 @@ namespace PCx.IO.Compression
 		{
 			get
 			{
-				return false;
+				return _DecompressStream != null;
 			}
 		}
 
@@ -153,7 +162,7 @@ namespace PCx.IO.Compression
 		/// <param name="count">Count.</param>
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			throw new NotSupportedException();
+			return _DecompressStream.Read(buffer, offset, count);
 		}
 
 		/// <summary>
@@ -211,6 +220,11 @@ namespace PCx.IO.Compression
 				if (_CompressStream != null)
 				{
 					_CompressStream.Dispose();
+				}
+
+				if (_DecompressStream != null)
+				{
+					_DecompressStream.Dispose();
 				}
 			}
 			finally

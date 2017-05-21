@@ -9,6 +9,8 @@ namespace PCx.IO.Compression
 
 		private readonly byte[] _Bytes;
 
+		public static readonly Buffer Empty = new Buffer(new byte[0]);
+
 		#endregion
 
 		#region Constructor
@@ -34,6 +36,14 @@ namespace PCx.IO.Compression
 			get
 			{
 				return _Bytes.Length;
+			}
+		}
+
+		public byte[] Bytes
+		{
+			get
+			{
+				return _Bytes;
 			}
 		}
 

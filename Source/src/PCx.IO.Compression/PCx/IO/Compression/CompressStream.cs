@@ -24,7 +24,7 @@ namespace PCx.IO.Compression
 		{
 			_CompressGraph = new CompressGraph(compressionLevel);
 
-			_WriteStream = WriteStreamAsync(stream);
+			_WriteStream = WriteAsync(stream);
 
 			_Buffer = new byte[bufferSize];
 		}
@@ -79,7 +79,7 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private async Task WriteStreamAsync(Stream stream)
+		private async Task WriteAsync(Stream stream)
 		{
 			while (await _CompressGraph.OutputAvailableAsync())
 			{
