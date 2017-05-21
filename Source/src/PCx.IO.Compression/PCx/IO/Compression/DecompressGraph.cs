@@ -12,15 +12,15 @@ namespace PCx.IO.Compression
 
 		private readonly ITargetBlock<Buffer> _TargetBlock;
 
-		private readonly IDataflowBlock _CompleteBlock;
+		private readonly ISourceBlock<Buffer> _SourceBlock;
 
 		#endregion
 
 		#region Constructor
 
-		public DecompressGraph(Stream stream, IProgress<double> progress)
+		public DecompressGraph()
 		{
-			(_TargetBlock, _CompleteBlock) = BuildGraph(stream, progress);
+			(_TargetBlock, _SourceBlock) = BuildGraph();
 		}
 
 		#endregion
@@ -36,10 +36,20 @@ namespace PCx.IO.Compression
 		{
 			_TargetBlock.Complete();
 
-			return _CompleteBlock.Completion;
+			return _SourceBlock.Completion;
 		}
 
-		private static (ITargetBlock<Buffer> targetBlock, IDataflowBlock completeBlock) BuildGraph(Stream stream, IProgress<double> progress)
+		public Task<bool> OutputAvailableAsync()
+		{
+			return _SourceBlock.OutputAvailableAsync();
+		}
+
+		public Buffer Receive()
+		{
+			return _SourceBlock.Receive();
+		}
+
+		private static (ITargetBlock<Buffer> targetBlock, ISourceBlock<Buffer> sourceBlock) BuildGraph()
 		{
 			int boundedCapacity = Environment.ProcessorCount * 2;
 
@@ -51,12 +61,7 @@ namespace PCx.IO.Compression
 			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => Decompress(buffer), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
-				MaxDegreeOfParallelism = Environment.ProcessorCount
-			});
-
-			var writerBlock = new ActionBlock<Buffer>(buffer => buffer.WriteTo(stream, progress), new ExecutionDataflowBlockOptions
-			{
-				BoundedCapacity = boundedCapacity,
+				MaxDegreeOfParallelism = Environment.ProcessorCount,
 				SingleProducerConstrained = true
 			});
 
@@ -65,12 +70,7 @@ namespace PCx.IO.Compression
 				PropagateCompletion = true
 			});
 
-			decompressBlock.LinkTo(writerBlock, new DataflowLinkOptions()
-			{
-				PropagateCompletion = true
-			});
-
-			return (targetBlock: bufferBlock, completeBlock: writerBlock);
+			return (targetBlock: bufferBlock, sourceBlock: decompressBlock);
 		}
 
 		private static Buffer Decompress(Buffer buffer)

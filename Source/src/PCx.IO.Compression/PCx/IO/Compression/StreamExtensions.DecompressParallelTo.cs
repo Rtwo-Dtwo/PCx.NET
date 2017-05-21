@@ -83,8 +83,10 @@ namespace PCx.IO.Compression
 			Contract.EndContractBlock();
 
 			#endregion
-			
-			var decompressGraph = new DecompressGraph(destination, progress);
+
+			var decompressGraph = new DecompressGraph();
+
+			var writeDestination = destination.WriteAsync(decompressGraph, progress);
 
 			while (source.TryRead(out var length))
 			{
@@ -100,7 +102,19 @@ namespace PCx.IO.Compression
 
 			await decompressGraph.CompleteAsync();
 
+			await writeDestination;
+
 			progress.Report(1.0);
+		}
+
+		private static async Task WriteAsync(this Stream destination, DecompressGraph decompressGraph, IProgress<double> progress)
+		{
+			while (await decompressGraph.OutputAvailableAsync())
+			{
+				var buffer = decompressGraph.Receive();
+
+				buffer.WriteTo(destination, progress);
+			}
 		}
 
 		private static bool TryRead(this Stream stream, out int value)
