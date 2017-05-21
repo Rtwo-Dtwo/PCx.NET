@@ -3,7 +3,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-
+using System.Threading.Tasks;
 using Xunit;
 
 namespace PCx.IO.Compression.Tests
@@ -15,7 +15,7 @@ namespace PCx.IO.Compression.Tests
 		[Theory]
 		[InlineData(CompressionLevel.Optimal)]
 		[InlineData(CompressionLevel.Fastest)]
-		public static async void CompressParallel_SizeDecreases(CompressionLevel compressionLevel)
+		public static async Task CompressParallel_SizeDecreases(CompressionLevel compressionLevel)
 		{
 			var data = GenerateMockData(1024, 1088);
 
@@ -37,7 +37,7 @@ namespace PCx.IO.Compression.Tests
 		}
 
 		[Fact]
-		public static async void CompressParallel_NoCompression_SizeIncreases()
+		public static async Task CompressParallel_NoCompression_SizeIncreases()
 		{
 			var data = GenerateMockData(1024, 1088);
 
@@ -59,7 +59,7 @@ namespace PCx.IO.Compression.Tests
 		}
 
 		[Fact]
-		public static async void CompressParallel_ReportsProgress()
+		public static async Task CompressParallel_ReportsProgress()
 		{
 			const int bufferSize = 128 * 1024;
 
@@ -83,26 +83,26 @@ namespace PCx.IO.Compression.Tests
 		}
 
 		[Fact]
-		public static async void CompressParallel_ArgumentValidation()
+		public static async Task CompressParallel_ArgumentValidation()
 		{
 			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, null, CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, Stream.Null, CompressionLevel.NoCompression, 1, null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(null, CompressionLevel.NoCompression, 1, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, null));
 
 			var closedStream = new MemoryStream();
 			closedStream.Dispose();
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(closedStream, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, closedStream, CompressionLevel.NoCompression, 1, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => closedStream.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.CompressParallelToAsync(closedStream, CompressionLevel.NoCompression, 1, new Progress<double>()));
 
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => StreamExtensions.CompressParallelToAsync(Stream.Null, Stream.Null, CompressionLevel.NoCompression, -73, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, -73, new Progress<double>()));
 		}
 
 		[Theory]
 		[InlineData(CompressionLevel.Optimal)]
 		[InlineData(CompressionLevel.Fastest)]
 		[InlineData(CompressionLevel.NoCompression)]
-		public static async void DecompressParallel_EqualsSourceData(CompressionLevel compressionLevel)
+		public static async Task DecompressParallel_EqualsSourceData(CompressionLevel compressionLevel)
 		{
 			var data = GenerateMockData(1024, 1088);
 
@@ -129,7 +129,7 @@ namespace PCx.IO.Compression.Tests
 		}
 
 		[Fact]
-		public static async void DecompressParallel_ReportsProgress()
+		public static async Task DecompressParallel_ReportsProgress()
 		{
 			const int bufferSize = 128 * 1024;
 
@@ -160,17 +160,17 @@ namespace PCx.IO.Compression.Tests
 		}
 
 		[Fact]
-		public static async void DecompressParallel_ArgumentValidation()
+		public static async Task DecompressParallel_ArgumentValidation()
 		{
 			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, Stream.Null, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(Stream.Null, null, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(Stream.Null, Stream.Null, null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(null, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(Stream.Null, null));
 
 			var closedStream = new MemoryStream();
 			closedStream.Dispose();
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(closedStream, Stream.Null, new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => StreamExtensions.DecompressParallelToAsync(Stream.Null, closedStream, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => closedStream.DecompressParallelToAsync(Stream.Null, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.DecompressParallelToAsync(closedStream, new Progress<double>()));
 		}
 
 		#endregion
@@ -191,9 +191,9 @@ namespace PCx.IO.Compression.Tests
 		{
 			#region Fields
 
-			private double _Value = 0.0;
+			private double _Value;
 
-			private int _Count = 0;
+			private int _Count;
 
 			#endregion
 
@@ -214,14 +214,14 @@ namespace PCx.IO.Compression.Tests
 			{
 				#region Contracts
 
-				if (value == 0)
+				if (Math.Abs(value) < 1e-15)
 				{
-					throw new ArgumentException("value is zero", "value");
+					throw new ArgumentException("value is zero", nameof(value));
 				}
 
 				if (value < _Value)
 				{
-					throw new ArgumentException("value is less than current value", "value");
+					throw new ArgumentException("value is less than current value", nameof(value));
 				}
 
 				Contract.EndContractBlock();

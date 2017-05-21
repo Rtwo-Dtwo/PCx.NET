@@ -71,7 +71,7 @@ namespace PCx.IO.Compression
 
 			if (source == null)
 			{
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException(nameof(source));
 			}
 
 			if (!source.CanRead)
@@ -81,7 +81,7 @@ namespace PCx.IO.Compression
 
 			if (destination == null)
 			{
-				throw new ArgumentNullException("destination");
+				throw new ArgumentNullException(nameof(destination));
 			}
 
 			if (!destination.CanWrite)
@@ -91,12 +91,12 @@ namespace PCx.IO.Compression
 
 			if (bufferSize <= 0)
 			{
-				throw new ArgumentOutOfRangeException("bufferSize is negative or zero", "bufferSize");
+				throw new ArgumentOutOfRangeException(nameof(bufferSize), "bufferSize is negative or zero");
 			}
 
 			if (progress == null)
 			{
-				throw new ArgumentNullException("progress");
+				throw new ArgumentNullException(nameof(progress));
 			}
 
 			Contract.EndContractBlock();
