@@ -20,7 +20,7 @@ namespace PCx.IO.Compression
 
 		public DecompressGraph()
 		{
-			(_TargetBlock, _SourceBlock) = BuildGraph();
+			BuildGraph(out _TargetBlock, out _SourceBlock);
 		}
 
 		#endregion
@@ -49,11 +49,11 @@ namespace PCx.IO.Compression
 			return _SourceBlock.Receive();
 		}
 
-		private static (ITargetBlock<Buffer> targetBlock, ISourceBlock<Buffer> sourceBlock) BuildGraph()
+		private static void BuildGraph(out ITargetBlock<Buffer> targetBlock, out ISourceBlock<Buffer> sourceBlock)
 		{
 			int boundedCapacity = Environment.ProcessorCount * 2;
 
-			var bufferBlock = new BufferBlock<Buffer>(new DataflowBlockOptions()
+			var bufferBlock = new BufferBlock<Buffer>(new DataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity
 			});
@@ -70,7 +70,8 @@ namespace PCx.IO.Compression
 				PropagateCompletion = true
 			});
 
-			return (targetBlock: bufferBlock, sourceBlock: decompressBlock);
+			targetBlock = bufferBlock;
+			sourceBlock = decompressBlock;
 		}
 
 		private static Buffer Decompress(Buffer buffer)
