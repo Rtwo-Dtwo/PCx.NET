@@ -84,58 +84,18 @@ namespace PCx.IO.Compression
 
 			#endregion
 
-			var decompressGraph = new DecompressGraph();
+			var decompressGraph = new DecompressGraph(source);
 
-			var writeDestination = destination.WriteAsync(decompressGraph, progress);
-
-			while (source.TryRead(out var length))
-			{
-				if (!source.TryRead(out var complementLength) || (~length != complementLength))
-				{
-					throw new IOException("Source stream is not well-formed");
-				}
-
-				var buffer = Buffer.ReadFrom(source, length);
-
-				await decompressGraph.SendAsync(buffer);
-			}
-
-			await decompressGraph.CompleteAsync();
-
-			await writeDestination;
-
-			progress.Report(1.0);
-		}
-
-		private static async Task WriteAsync(this Stream stream, DecompressGraph decompressGraph, IProgress<double> progress)
-		{
 			while (await decompressGraph.OutputAvailableAsync())
 			{
 				var buffer = decompressGraph.Receive();
 
-				buffer.WriteTo(stream, progress);
-			}
-		}
-
-		private static bool TryRead(this Stream stream, out int value)
-		{
-			var bytes = new byte[4];
-
-			if (stream.Read(bytes, 0, bytes.Length) == bytes.Length)
-			{
-				if (!BitConverter.IsLittleEndian)
-				{
-					Array.Reverse(bytes);
-				}
-
-				value = BitConverter.ToInt32(bytes, 0);
-
-				return true;
+				buffer.WriteTo(destination, progress);
 			}
 
-			value = default(int);
+			await decompressGraph.CompleteAsync();
 
-			return false;
+			progress.Report(1.0);
 		}
 
 		#endregion

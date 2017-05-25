@@ -10,8 +10,6 @@ namespace PCx.IO.Compression
 
 		private readonly DecompressGraph _DecompressGraph;
 
-		private readonly Task _ReadStream;
-
 		private Buffer _Buffer = Buffer.Empty;
 		private int _BufferPosition;
 
@@ -21,9 +19,7 @@ namespace PCx.IO.Compression
 
 		public DecompressStream(Stream stream)
 		{
-			_DecompressGraph = new DecompressGraph();
-
-			_ReadStream = ReadAsync(stream);
+			_DecompressGraph = new DecompressGraph(stream);
 		}
 
 		#endregion
@@ -90,51 +86,13 @@ namespace PCx.IO.Compression
 			return false;
 		}
 
-		private async Task ReadAsync(Stream stream)
-		{
-			while (TryRead(stream, out var length))
-			{
-				if (!TryRead(stream, out var complementLength) || (~length != complementLength))
-				{
-					throw new IOException("Source stream is not well-formed");
-				}
-
-				var buffer = Buffer.ReadFrom(stream, length);
-
-				await _DecompressGraph.SendAsync(buffer);
-			}
-
-			await _DecompressGraph.CompleteAsync();
-		}
-
-		private static bool TryRead(Stream stream, out int value)
-		{
-			var bytes = new byte[4];
-
-			if (stream.Read(bytes, 0, bytes.Length) == bytes.Length)
-			{
-				if (!BitConverter.IsLittleEndian)
-				{
-					Array.Reverse(bytes);
-				}
-
-				value = BitConverter.ToInt32(bytes, 0);
-
-				return true;
-			}
-
-			value = default(int);
-
-			return false;
-		}
-
 		#endregion
 
 		#region IDisposable Members
 
 		public void Dispose()
 		{
-			_ReadStream.Wait();
+			_DecompressGraph.CompleteAsync().Wait();
 		}
 
 		#endregion

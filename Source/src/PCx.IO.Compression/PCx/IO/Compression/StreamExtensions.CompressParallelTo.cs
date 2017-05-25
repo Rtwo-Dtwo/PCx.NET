@@ -103,9 +103,7 @@ namespace PCx.IO.Compression
 
 			#endregion
 
-			var compressGraph = new CompressGraph(compressionLevel);
-
-			var writeDestination = destination.WriteAsync(compressGraph, progress);
+			var compressGraph = new CompressGraph(destination, compressionLevel, progress);
 
 			while (Buffer.TryReadFrom(source, bufferSize, out var buffer))
 			{
@@ -114,34 +112,7 @@ namespace PCx.IO.Compression
 
 			await compressGraph.CompleteAsync();
 
-			await writeDestination;
-
 			progress.Report(1.0);
-		}
-
-		private static async Task WriteAsync(this Stream stream, CompressGraph compressGraph, IProgress<double> progress)
-		{
-			while (await compressGraph.OutputAvailableAsync())
-			{
-				var buffer = compressGraph.Receive();
-
-				stream.Write(buffer.Size);
-				stream.Write(~buffer.Size);
-
-				buffer.WriteTo(stream, progress);
-			}
-		}
-
-		private static void Write(this Stream stream, int value)
-		{
-			var bytes = BitConverter.GetBytes(value);
-
-			if (!BitConverter.IsLittleEndian)
-			{
-				Array.Reverse(bytes);
-			}
-
-			stream.Write(bytes, 0, bytes.Length);
 		}
 
 		#endregion

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
-using System.Threading.Tasks;
 
 namespace PCx.IO.Compression
 {
@@ -10,8 +9,6 @@ namespace PCx.IO.Compression
 		#region Fields
 
 		private readonly CompressGraph _CompressGraph;
-
-		private readonly Task _WriteStream;
 
 		private readonly byte[] _Buffer;
 		private int _BufferPosition;
@@ -22,9 +19,7 @@ namespace PCx.IO.Compression
 
 		public CompressStream(Stream stream, CompressionLevel compressionLevel, int bufferSize)
 		{
-			_CompressGraph = new CompressGraph(compressionLevel);
-
-			_WriteStream = WriteAsync(stream);
+			_CompressGraph = new CompressGraph(stream, compressionLevel);
 
 			_Buffer = new byte[bufferSize];
 		}
@@ -79,31 +74,6 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private async Task WriteAsync(Stream stream)
-		{
-			while (await _CompressGraph.OutputAvailableAsync())
-			{
-				var buffer = _CompressGraph.Receive();
-
-				Write(stream, buffer.Size);
-				Write(stream, ~buffer.Size);
-
-				buffer.WriteTo(stream);
-			}
-		}
-
-		private static void Write(Stream stream, int value)
-		{
-			var bytes = BitConverter.GetBytes(value);
-
-			if (!BitConverter.IsLittleEndian)
-			{
-				Array.Reverse(bytes);
-			}
-
-			stream.Write(bytes, 0, bytes.Length);
-		}
-
 		#endregion
 
 		#region IDisposable Members
@@ -112,7 +82,7 @@ namespace PCx.IO.Compression
 		{
 			SendBuffer();
 
-			Task.WaitAll(_CompressGraph.CompleteAsync(), _WriteStream);
+			_CompressGraph.CompleteAsync().Wait();
 		}
 
 		#endregion

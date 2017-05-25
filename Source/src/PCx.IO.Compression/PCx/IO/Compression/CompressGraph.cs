@@ -14,13 +14,22 @@ namespace PCx.IO.Compression
 
 		private readonly ISourceBlock<Buffer> _SourceBlock;
 
+		private readonly Task _WriteStream;
+
 		#endregion
 
 		#region Constructor
 
-		public CompressGraph(CompressionLevel compressionLevel)
+		public CompressGraph(Stream stream, CompressionLevel compressionLevel)
+			:this(stream, compressionLevel, new Progress<double>())
+		{
+		}
+
+		public CompressGraph(Stream stream, CompressionLevel compressionLevel, IProgress<double> progress)
 		{
 			BuildGraph(compressionLevel, out _TargetBlock, out _SourceBlock);
+
+			_WriteStream = WriteAsync(stream, progress);
 		}
 
 		#endregion
@@ -32,21 +41,13 @@ namespace PCx.IO.Compression
 			return _TargetBlock.SendAsync(buffer);
 		}
 
-		public Task CompleteAsync()
+		public async Task CompleteAsync()
 		{
 			_TargetBlock.Complete();
 
-			return _SourceBlock.Completion;
-		}
+			await _SourceBlock.Completion;
 
-		public Task<bool> OutputAvailableAsync()
-		{
-			return _SourceBlock.OutputAvailableAsync();
-		}
-
-		public Buffer Receive()
-		{
-			return _SourceBlock.Receive();
+			await _WriteStream;
 		}
 
 		private static void BuildGraph(CompressionLevel compressionLevel, out ITargetBlock<Buffer> targetBlock, out ISourceBlock<Buffer> sourceBlock)
@@ -85,6 +86,31 @@ namespace PCx.IO.Compression
 
 				return new Buffer(destination.ToArray(), buffer.Progress);
 			}
+		}
+
+		private async Task WriteAsync(Stream stream, IProgress<double> progress)
+		{
+			while (await _SourceBlock.OutputAvailableAsync())
+			{
+				var buffer = _SourceBlock.Receive();
+
+				Write(stream, buffer.Size);
+				Write(stream, ~buffer.Size);
+
+				buffer.WriteTo(stream, progress);
+			}
+		}
+
+		private static void Write(Stream stream, int value)
+		{
+			var bytes = BitConverter.GetBytes(value);
+
+			if (!BitConverter.IsLittleEndian)
+			{
+				Array.Reverse(bytes);
+			}
+
+			stream.Write(bytes, 0, bytes.Length);
 		}
 
 		#endregion

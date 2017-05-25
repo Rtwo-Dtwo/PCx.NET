@@ -14,30 +14,22 @@ namespace PCx.IO.Compression
 
 		private readonly ISourceBlock<Buffer> _SourceBlock;
 
+		private readonly Task _ReadStream;
+
 		#endregion
 
 		#region Constructor
 
-		public DecompressGraph()
+		public DecompressGraph(Stream stream)
 		{
 			BuildGraph(out _TargetBlock, out _SourceBlock);
+
+			_ReadStream = ReadAsync(stream);
 		}
 
 		#endregion
 
 		#region Methods
-
-		public Task SendAsync(Buffer buffer)
-		{
-			return _TargetBlock.SendAsync(buffer);
-		}
-
-		public Task CompleteAsync()
-		{
-			_TargetBlock.Complete();
-
-			return _SourceBlock.Completion;
-		}
 
 		public Task<bool> OutputAvailableAsync()
 		{
@@ -47,6 +39,11 @@ namespace PCx.IO.Compression
 		public Buffer Receive()
 		{
 			return _SourceBlock.Receive();
+		}
+
+		public Task CompleteAsync()
+		{
+			return _SourceBlock.Completion;
 		}
 
 		private static void BuildGraph(out ITargetBlock<Buffer> targetBlock, out ISourceBlock<Buffer> sourceBlock)
@@ -85,6 +82,44 @@ namespace PCx.IO.Compression
 					return new Buffer(destination.ToArray(), buffer.Progress);
 				}
 			}
+		}
+
+		private async Task ReadAsync(Stream stream)
+		{
+			while (TryRead(stream, out var length))
+			{
+				if (!TryRead(stream, out var complementLength) || (~length != complementLength))
+				{
+					throw new IOException("Source stream is not well-formed");
+				}
+
+				var buffer = Buffer.ReadFrom(stream, length);
+
+				await _TargetBlock.SendAsync(buffer);
+			}
+
+			_TargetBlock.Complete();
+		}
+
+		private static bool TryRead(Stream stream, out int value)
+		{
+			var bytes = new byte[4];
+
+			if (stream.Read(bytes, 0, bytes.Length) == bytes.Length)
+			{
+				if (!BitConverter.IsLittleEndian)
+				{
+					Array.Reverse(bytes);
+				}
+
+				value = BitConverter.ToInt32(bytes, 0);
+
+				return true;
+			}
+
+			value = default(int);
+
+			return false;
 		}
 
 		#endregion
