@@ -186,7 +186,7 @@ namespace PCx.IO.Compression
 
 		private void EnsureCompressionMode()
 		{
-			if (_CompressStream != null)
+			if (_CompressStream == null)
 			{
 				throw new InvalidOperationException("Cannot write to stream");
 			}
@@ -194,7 +194,7 @@ namespace PCx.IO.Compression
 
 		private void EnsureDecompressionMode()
 		{
-			if (_DecompressStream != null)
+			if (_DecompressStream == null)
 			{
 				throw new InvalidOperationException("Cannot read from stream");
 			}
