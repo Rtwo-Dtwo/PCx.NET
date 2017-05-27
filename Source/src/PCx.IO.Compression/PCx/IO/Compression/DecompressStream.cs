@@ -72,7 +72,7 @@ namespace PCx.IO.Compression
 		{
 			if (_DecompressGraph.OutputAvailableAsync().Result)
 			{
-				_Buffer = _DecompressGraph.Receive();
+				_Buffer = _DecompressGraph.ReceiveAsync().Result;
 
 				_BufferPosition = 0;
 

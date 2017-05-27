@@ -88,7 +88,7 @@ namespace PCx.IO.Compression
 
 			while (await decompressGraph.OutputAvailableAsync())
 			{
-				var buffer = decompressGraph.Receive();
+				var buffer = await decompressGraph.ReceiveAsync();
 
 				buffer.WriteTo(destination, progress);
 			}

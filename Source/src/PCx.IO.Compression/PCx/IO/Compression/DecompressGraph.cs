@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -14,6 +15,8 @@ namespace PCx.IO.Compression
 
 		private readonly ISourceBlock<Buffer> _SourceBlock;
 
+		private readonly CancellationTokenSource _Cancellation = new CancellationTokenSource();
+
 		private readonly Task _ReadStream;
 
 		#endregion
@@ -24,7 +27,7 @@ namespace PCx.IO.Compression
 		{
 			BuildGraph(out _TargetBlock, out _SourceBlock);
 
-			_ReadStream = ReadAsync(stream);
+			_ReadStream = ReadAsync(stream, _Cancellation.Token);
 		}
 
 		#endregion
@@ -36,14 +39,30 @@ namespace PCx.IO.Compression
 			return _SourceBlock.OutputAvailableAsync();
 		}
 
-		public Buffer Receive()
+		public Task<Buffer> ReceiveAsync()
 		{
-			return _SourceBlock.Receive();
+			return _SourceBlock.ReceiveAsync();
 		}
 
-		public Task CompleteAsync()
+		public async Task CompleteAsync()
 		{
-			return _SourceBlock.Completion;
+			_Cancellation.Cancel();
+
+			await _ReadStream;
+
+			await FlushAsync();
+
+			await _SourceBlock.Completion;
+
+			_Cancellation.Dispose();
+		}
+
+		private async Task FlushAsync()
+		{
+			while (await _SourceBlock.OutputAvailableAsync())
+			{
+				await _SourceBlock.ReceiveAsync();
+			}
 		}
 
 		private static void BuildGraph(out ITargetBlock<Buffer> targetBlock, out ISourceBlock<Buffer> sourceBlock)
@@ -84,21 +103,31 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private async Task ReadAsync(Stream stream)
+		private async Task ReadAsync(Stream stream, CancellationToken cancealltionToken)
 		{
-			while (TryRead(stream, out var length))
+			try
 			{
-				if (!TryRead(stream, out var complementLength) || (~length != complementLength))
+				while (TryRead(stream, out var length))
 				{
-					throw new IOException("Source stream is not well-formed");
+					if (!TryRead(stream, out var complementLength) || (~length != complementLength))
+					{
+						throw new IOException("Source stream is not well-formed");
+					}
+					
+					cancealltionToken.ThrowIfCancellationRequested();
+					
+					var buffer = Buffer.ReadFrom(stream, length);
+					
+					await _TargetBlock.SendAsync(buffer, cancealltionToken);
 				}
-
-				var buffer = Buffer.ReadFrom(stream, length);
-
-				await _TargetBlock.SendAsync(buffer);
 			}
-
-			_TargetBlock.Complete();
+			catch (OperationCanceledException)
+			{
+			}
+			finally
+			{
+				_TargetBlock.Complete();
+			}
 		}
 
 		private static bool TryRead(Stream stream, out int value)
