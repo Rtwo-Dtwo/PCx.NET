@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace PCx.IO.Compression
 {
@@ -8,7 +8,9 @@ namespace PCx.IO.Compression
 	{
 		#region Fields
 
-		private readonly DecompressGraph _DecompressGraph;
+		private Stream _Stream;
+
+		private DecompressGraph _DecompressGraph;
 
 		private Buffer _Buffer = Buffer.Empty;
 		private int _BufferPosition;
@@ -19,7 +21,7 @@ namespace PCx.IO.Compression
 
 		public DecompressStream(Stream stream)
 		{
-			_DecompressGraph = new DecompressGraph(stream);
+			_Stream = stream;
 		}
 
 		#endregion
@@ -28,21 +30,20 @@ namespace PCx.IO.Compression
 
 		public int Read(byte[] buffer, int offset, int count)
 		{
-			int readCount = 0;
+			InitializeGraph();
+
+			var readCount = 0;
 
 			while (true)
 			{
-				if (_Buffer.Size == 0)
+				if ((_Buffer.Size == 0) && !ReceiveBuffer())
 				{
-					if (!ReceiveBuffer())
-					{
-						break;
-					}
+					break;
 				}
 
-				int requiredCount = count - readCount;
+				var requiredCount = count - readCount;
 
-				int remainingCount = _Buffer.Size - _BufferPosition;
+				var remainingCount = _Buffer.Size - _BufferPosition;
 
 				if (remainingCount >= requiredCount)
 				{
@@ -66,6 +67,16 @@ namespace PCx.IO.Compression
 			}
 
 			return readCount;
+		}
+
+		private void InitializeGraph()
+		{
+			if (_DecompressGraph == null)
+			{
+				Debug.Assert(_Stream != null);
+
+				_DecompressGraph = new DecompressGraph(_Stream);
+			}
 		}
 
 		private bool ReceiveBuffer()
@@ -92,7 +103,27 @@ namespace PCx.IO.Compression
 
 		public void Dispose()
 		{
-			_DecompressGraph.CompleteAsync().Wait();
+			if (_Stream != null)
+			{
+				try
+				{
+					if (_DecompressGraph != null)
+					{
+						try
+						{
+							_DecompressGraph.CompleteAsync().Wait();
+						}
+						finally
+						{
+							_DecompressGraph = null;
+						}
+					}
+				}
+				finally
+				{
+					_Stream = null;
+				}
+			}
 		}
 
 		#endregion
