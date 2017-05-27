@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
 
@@ -51,6 +52,27 @@ namespace PCx.IO.Compression
 		/// <param name="leaveOpen">true to leave the stream object open after disposing the <see cref="DeflateParallelStream"/> object; otherwise, false.</param>
 		public DeflateParallelStream(Stream stream, CompressionMode compressionMode, bool leaveOpen)
 		{
+			#region Contracts
+
+			if (stream == null)
+			{
+				throw new ArgumentNullException(nameof(stream));
+			}
+
+			if ((compressionMode == CompressionMode.Compress) && !stream.CanWrite)
+			{
+				throw new NotSupportedException("stream does not support writing");
+			}
+
+			if ((compressionMode == CompressionMode.Decompress) && !stream.CanRead)
+			{
+				throw new NotSupportedException("stream does not support reading");
+			}
+
+			Contract.EndContractBlock();
+
+			#endregion
+
 			_Stream = stream;
 
 			_LeaveOpen = leaveOpen;
@@ -106,6 +128,27 @@ namespace PCx.IO.Compression
 		/// </remarks>
 		public DeflateParallelStream(Stream stream, CompressionLevel compressionLevel, int bufferSize, bool leaveOpen)
 		{
+			#region Contracts
+
+			if (stream == null)
+			{
+				throw new ArgumentNullException(nameof(stream));
+			}
+
+			if (!stream.CanWrite)
+			{
+				throw new NotSupportedException("stream does not support writing");
+			}
+
+			if (bufferSize <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(bufferSize), "bufferSize is negative or zero");
+			}
+
+			Contract.EndContractBlock();
+
+			#endregion
+
 			_Stream = stream;
 
 			_LeaveOpen = leaveOpen;
