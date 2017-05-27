@@ -174,6 +174,34 @@ namespace PCx.IO.Compression
 
 		#endregion
 
+		#region Methods
+
+		private void EnsureNotDisposed()
+		{
+			if (_Stream == null)
+			{
+				throw new ObjectDisposedException(null, "Stream is closed");
+			}
+		}
+
+		private void EnsureCompressionMode()
+		{
+			if (_CompressStream != null)
+			{
+				throw new InvalidOperationException("Cannot write to stream");
+			}
+		}
+
+		private void EnsureDecompressionMode()
+		{
+			if (_DecompressStream != null)
+			{
+				throw new InvalidOperationException("Cannot read from stream");
+			}
+		}
+
+		#endregion
+
 		#region Overridden from Stream
 
 		#region Properties
@@ -185,6 +213,11 @@ namespace PCx.IO.Compression
 		{
 			get
 			{
+				if (_Stream == null)
+				{
+					return false;
+				}
+
 				return _DecompressStream != null;
 			}
 		}
@@ -196,6 +229,11 @@ namespace PCx.IO.Compression
 		{
 			get
 			{
+				if (_Stream == null)
+				{
+					return false;
+				}
+
 				return _CompressStream != null;
 			}
 		}
@@ -246,6 +284,9 @@ namespace PCx.IO.Compression
 		/// </summary>
 		public override int Read(byte[] buffer, int offset, int count)
 		{
+			EnsureNotDisposed();
+			EnsureDecompressionMode();
+
 			return _DecompressStream.Read(buffer, offset, count);
 		}
 
@@ -254,6 +295,9 @@ namespace PCx.IO.Compression
 		/// </summary>
 		public override void Write(byte[] buffer, int offset, int count)
 		{
+			EnsureNotDisposed();
+			EnsureCompressionMode();
+
 			_CompressStream.Write(buffer, offset, count);
 		}
 
@@ -262,6 +306,8 @@ namespace PCx.IO.Compression
 		/// </summary>
 		public override void Flush()
 		{
+			EnsureNotDisposed();
+
 			if (_CompressStream != null)
 			{
 				_CompressStream.Flush();
