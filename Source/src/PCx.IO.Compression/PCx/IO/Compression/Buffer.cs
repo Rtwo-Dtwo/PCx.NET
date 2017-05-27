@@ -15,6 +15,11 @@ namespace PCx.IO.Compression
 
 		#region Constructor
 
+		public Buffer(int size)
+			: this(new byte[size])
+		{
+		}
+
 		public Buffer(byte[] bytes)
 			: this(bytes, progress: null)
 		{
@@ -25,6 +30,12 @@ namespace PCx.IO.Compression
 			_Bytes = bytes;
 
 			Progress = progress;
+		}
+
+		public Buffer(Buffer buffer, int count)
+			: this(new byte[count])
+		{
+			System.Buffer.BlockCopy(buffer.Bytes, 0, _Bytes, 0, count);
 		}
 
 		#endregion

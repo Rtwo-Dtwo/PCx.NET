@@ -13,9 +13,11 @@ namespace PCx.IO.Compression
 
 		private readonly CompressionLevel _CompressionLevel;
 
+		private readonly int _BufferSize;
+
 		private CompressGraph _CompressGraph;
 
-		private readonly byte[] _Buffer;
+		private Buffer _Buffer;
 		private int _BufferPosition;
 
 		#endregion
@@ -28,7 +30,9 @@ namespace PCx.IO.Compression
 
 			_CompressionLevel = compressionLevel;
 
-			_Buffer = new byte[bufferSize];
+			_BufferSize = bufferSize;
+
+			_Buffer = new Buffer(_BufferSize);
 		}
 
 		#endregion
@@ -45,11 +49,11 @@ namespace PCx.IO.Compression
 			{
 				var requiredCount = count - writeCount;
 
-				var remainingCount = _Buffer.Length - _BufferPosition;
+				var remainingCount = _Buffer.Size - _BufferPosition;
 
 				if (requiredCount < remainingCount)
 				{
-					System.Buffer.BlockCopy(buffer, offset + writeCount, _Buffer, _BufferPosition, requiredCount);
+					System.Buffer.BlockCopy(buffer, offset + writeCount, _Buffer.Bytes, _BufferPosition, requiredCount);
 
 					writeCount += requiredCount;
 
@@ -59,7 +63,7 @@ namespace PCx.IO.Compression
 				}
 				else
 				{
-					System.Buffer.BlockCopy(buffer, offset + writeCount, _Buffer, _BufferPosition, remainingCount);
+					System.Buffer.BlockCopy(buffer, offset + writeCount, _Buffer.Bytes, _BufferPosition, remainingCount);
 
 					writeCount += remainingCount;
 
@@ -91,10 +95,18 @@ namespace PCx.IO.Compression
 		{
 			if (_BufferPosition > 0)
 			{
-				var bytes = new byte[_BufferPosition];
-				System.Buffer.BlockCopy(_Buffer, 0, bytes, 0, _BufferPosition);
+				if (_Buffer.Size == _BufferPosition)
+				{
+					_CompressGraph.SendAsync(_Buffer).Wait();
 
-				_CompressGraph.SendAsync(new Buffer(bytes)).Wait();
+					_Buffer = new Buffer(_BufferSize);
+				}
+				else
+				{
+					var buffer = new Buffer(_Buffer, _BufferPosition);
+
+					_CompressGraph.SendAsync(buffer).Wait();
+				}
 
 				_BufferPosition = 0;
 			}
