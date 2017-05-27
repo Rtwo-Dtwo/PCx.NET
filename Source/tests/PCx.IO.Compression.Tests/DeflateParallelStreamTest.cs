@@ -7,7 +7,7 @@ using Xunit;
 
 namespace PCx.IO.Compression.Tests
 {
-	public static class CompressParallelStreamTest
+	public static class DeflateParallelStreamTest
 	{
 		#region Tests
 
