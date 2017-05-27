@@ -114,7 +114,7 @@ namespace PCx.IO.Compression
 		{
 			while (await _SourceBlock.OutputAvailableAsync())
 			{
-				var buffer = _SourceBlock.Receive();
+				var buffer = await _SourceBlock.ReceiveAsync();
 
 				Write(stream, buffer.Size);
 				Write(stream, ~buffer.Size);
