@@ -26,7 +26,7 @@ namespace PCx.IO.Compression.Tests
 
 			using (var compressed = new MemoryStream())
 			{
-				using (var compressStream = new DeflateParallelStream(compressed, CompressionLevel.Optimal, 128 * 1024))
+				using (var compressStream = new DeflateParallelStream(compressed, CompressionLevel.Optimal, 128 * 1024, leaveOpen: true))
 				{
 					foreach (var data in dataList)
 					{
@@ -38,7 +38,7 @@ namespace PCx.IO.Compression.Tests
 
 				compressed.Seek(0, SeekOrigin.Begin);
 
-				using (var decompressStream = new DeflateParallelStream(compressed, CompressionMode.Decompress))
+				using (var decompressStream = new DeflateParallelStream(compressed, CompressionMode.Decompress, leaveOpen: true))
 				{
 					using (var decompressed = new MemoryStream())
 					{

@@ -17,11 +17,12 @@ namespace PCx.IO.Compression
 	{
 		#region Fields
 
-		private readonly Stream _Stream;
+		private Stream _Stream;
 
-		private readonly CompressStream _CompressStream;
+		private readonly bool _LeaveOpen;
 
-		private readonly DecompressStream _DecompressStream;
+		private CompressStream _CompressStream;
+		private DecompressStream _DecompressStream;
 
 		private const int DefaultBufferSize = 81920;
 
@@ -36,8 +37,23 @@ namespace PCx.IO.Compression
 		/// <param name="stream">The stream to compress or decompress.</param>
 		/// <param name="compressionMode">One of the enumeration values that indicates whether to compress or decompress the stream.</param>
 		public DeflateParallelStream(Stream stream, CompressionMode compressionMode)
+			: this(stream, compressionMode, leaveOpen: false)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DeflateParallelStream"/> class
+		/// using the specified <paramref name="stream"/> and <paramref name="compressionMode"/>,
+		/// and optionally leaves the stream open.
+		/// </summary>
+		/// <param name="stream">The stream to compress or decompress.</param>
+		/// <param name="compressionMode">One of the enumeration values that indicates whether to compress or decompress the stream.</param>
+		/// <param name="leaveOpen">true to leave the stream object open after disposing the <see cref="DeflateParallelStream"/> object; otherwise, false.</param>
+		public DeflateParallelStream(Stream stream, CompressionMode compressionMode, bool leaveOpen)
 		{
 			_Stream = stream;
+
+			_LeaveOpen = leaveOpen;
 
 			switch (compressionMode)
 			{
@@ -71,8 +87,28 @@ namespace PCx.IO.Compression
 		/// and should be selected in dependency of the size of the <paramref name="stream"/> stream.
 		/// </remarks>
 		public DeflateParallelStream(Stream stream, CompressionLevel compressionLevel, int bufferSize)
+			: this(stream, compressionLevel, bufferSize, leaveOpen: false)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DeflateParallelStream"/> class
+		/// using the specified <paramref name="stream"/>, <paramref name="compressionLevel"/> and <paramref name="bufferSize"/>,
+		/// and optionally leaves the stream open.
+		/// </summary>
+		/// <param name="stream">The stream to compress.</param>
+		/// <param name="compressionLevel">One of the enumeration values that indicates whether to emphasize speed or compression efficiency when compressing the stream.</param>
+		/// <param name="bufferSize">The size of the buffer. This value must be greater than zero.</param>
+		/// <param name="leaveOpen">true to leave the stream object open after disposing the <see cref="DeflateParallelStream"/> object; otherwise, false.</param>
+		/// <remarks>
+		/// The specified <paramref name="bufferSize"/> affects the parallelization potential and
+		/// and should be selected in dependency of the size of the <paramref name="stream"/> stream.
+		/// </remarks>
+		public DeflateParallelStream(Stream stream, CompressionLevel compressionLevel, int bufferSize, bool leaveOpen)
 		{
 			_Stream = stream;
+
+			_LeaveOpen = leaveOpen;
 
 			_CompressStream = new CompressStream(_Stream, compressionLevel, bufferSize);
 		}
@@ -212,14 +248,44 @@ namespace PCx.IO.Compression
 		{
 			try
 			{
-				if (_CompressStream != null)
+				if (disposing)
 				{
-					_CompressStream.Dispose();
-				}
+					try
+					{
+						if (_CompressStream != null)
+						{
+							_CompressStream.Dispose();
+						}
+					}
+					finally
+					{
+						_CompressStream = null;
+					}
 
-				if (_DecompressStream != null)
-				{
-					_DecompressStream.Dispose();
+					try
+					{
+						if (_DecompressStream != null)
+						{
+							_DecompressStream.Dispose();
+						}
+					}
+					finally
+					{
+						_DecompressStream = null;
+					}
+
+					try
+					{
+						if ((_Stream != null) && !_LeaveOpen)
+						{
+							_Stream.Dispose();
+						}
+					}
+					finally
+					{
+						_Stream = null;
+					}
+
 				}
 			}
 			finally
