@@ -200,6 +200,29 @@ namespace PCx.IO.Compression
 			}
 		}
 
+		private void ValidateParameters(byte[] buffer, int offset, int count)
+		{
+			if (buffer == null)
+			{
+				throw new ArgumentNullException(nameof(buffer));
+			}
+
+            if (offset < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(offset));
+			}
+
+            if (count < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(count));
+			}
+
+			if ((buffer.Length - offset) < count)
+			{
+				throw new ArgumentException($"{nameof(buffer)} length minus {nameof(offset)} is less than {nameof(count)}");
+			}
+		}
+
 		#endregion
 
 		#region Overridden from Stream
@@ -284,6 +307,14 @@ namespace PCx.IO.Compression
 		/// </summary>
 		public override int Read(byte[] buffer, int offset, int count)
 		{
+			#region Contracts
+
+			ValidateParameters(buffer, offset, count);
+
+			Contract.EndContractBlock();
+
+			#endregion
+
 			EnsureNotDisposed();
 			EnsureDecompressionMode();
 
@@ -295,6 +326,14 @@ namespace PCx.IO.Compression
 		/// </summary>
 		public override void Write(byte[] buffer, int offset, int count)
 		{
+			#region Contracts
+
+			ValidateParameters(buffer, offset, count);
+
+			Contract.EndContractBlock();
+
+			#endregion
+
 			EnsureNotDisposed();
 			EnsureCompressionMode();
 
