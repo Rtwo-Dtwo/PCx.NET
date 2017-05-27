@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 
@@ -8,7 +9,11 @@ namespace PCx.IO.Compression
 	{
 		#region Fields
 
-		private readonly CompressGraph _CompressGraph;
+		private Stream _Stream;
+
+		private readonly CompressionLevel _CompressionLevel;
+
+		private CompressGraph _CompressGraph;
 
 		private readonly byte[] _Buffer;
 		private int _BufferPosition;
@@ -19,7 +24,9 @@ namespace PCx.IO.Compression
 
 		public CompressStream(Stream stream, CompressionLevel compressionLevel, int bufferSize)
 		{
-			_CompressGraph = new CompressGraph(stream, compressionLevel);
+			_Stream = stream;
+
+			_CompressionLevel = compressionLevel;
 
 			_Buffer = new byte[bufferSize];
 		}
@@ -30,6 +37,8 @@ namespace PCx.IO.Compression
 
 		public void Write(byte[] buffer, int offset, int count)
 		{
+			InitializeGraph();
+
 			var bufferPosition = 0;
 
 			while (true)
@@ -61,6 +70,16 @@ namespace PCx.IO.Compression
 			SendBuffer();
 		}
 
+		private void InitializeGraph()
+		{
+			if (_CompressGraph == null)
+			{
+				Debug.Assert(_Stream != null);
+
+				_CompressGraph = new CompressGraph(_Stream, _CompressionLevel);
+			}
+		}
+
 		private void SendBuffer()
 		{
 			if (_BufferPosition > 0)
@@ -80,9 +99,29 @@ namespace PCx.IO.Compression
 
 		public void Dispose()
 		{
-			SendBuffer();
+			if (_Stream != null)
+			{
+				try
+				{
+					if (_CompressGraph != null)
+					{
+						try
+						{
+							SendBuffer();
 
-			_CompressGraph.CompleteAsync().Wait();
+							_CompressGraph.CompleteAsync().Wait();
+						}
+						finally
+						{
+							_CompressGraph = null;
+						}
+					}
+				}
+				finally
+				{
+					_Stream = null;
+				}
+			}
 		}
 
 		#endregion
