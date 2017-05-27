@@ -27,6 +27,8 @@ using System.Linq;
 
 using Xunit;
 
+using static PCx.IO.Compression.Tests.Mock;
+
 namespace PCx.IO.Compression.Tests
 {
 	public static class DeflateParallelStreamTest
@@ -34,13 +36,13 @@ namespace PCx.IO.Compression.Tests
 		#region Tests
 
 		[Fact]
-		public static void CompressParallelStream_Validation()
+		public static void DeflateParallelStream_Validation()
 		{
 			var dataList = new[]
 			{
-				GenerateMockData(1024, 64),
-				GenerateMockData(1024, 128),
-				GenerateMockData(1024, 1120)
+				GenerateData(1024, 64),
+				GenerateData(1024, 128),
+				GenerateData(1024, 1120)
 			};
 
 			byte[] compressedData;
@@ -76,18 +78,17 @@ namespace PCx.IO.Compression.Tests
 			Assert.True(dataList.SelectMany(data => data).SequenceEqual(decompressedData));
 		}
 
-		#endregion
-
-		#region Mocks
-
-		private static byte[] GenerateMockData(int size, int repeat)
+		[Fact]
+		public static void DeflateParallelStream_Constructor_ArgumentValidation()
 		{
-			var random = new Random();
+			Assert.Throws<ArgumentNullException>(() => new DeflateParallelStream(null, CompressionMode.Compress, leaveOpen: true));
+			Assert.Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionMode.Compress, leaveOpen: true));
+			Assert.Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionMode.Decompress, leaveOpen: true));
 
-			var randomBuffer = new byte[size];
-			random.NextBytes(randomBuffer);
-
-			return Enumerable.Repeat(randomBuffer, repeat).SelectMany(buffer => buffer).ToArray();
+			Assert.Throws<ArgumentNullException>(() => new DeflateParallelStream(null, CompressionLevel.NoCompression, bufferSize: 1, leaveOpen: true));
+			Assert.Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionLevel.NoCompression, bufferSize: 1, leaveOpen: true));
+			
+			Assert.Throws<ArgumentOutOfRangeException>(() => new DeflateParallelStream(Stream.Null, CompressionLevel.NoCompression, bufferSize: -1, leaveOpen: true));
 		}
 
 		#endregion

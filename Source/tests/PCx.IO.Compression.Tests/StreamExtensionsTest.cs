@@ -26,7 +26,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Xunit;
+
+using static PCx.IO.Compression.Tests.Mock;
 
 namespace PCx.IO.Compression.Tests
 {
@@ -39,7 +42,7 @@ namespace PCx.IO.Compression.Tests
 		[InlineData(CompressionLevel.Fastest)]
 		public static async Task CompressParallel_SizeDecreases(CompressionLevel compressionLevel)
 		{
-			var data = GenerateMockData(1024, 1088);
+			var data = GenerateData(1024, 1088);
 
 			byte[] compressedData;
 
@@ -61,7 +64,7 @@ namespace PCx.IO.Compression.Tests
 		[Fact]
 		public static async Task CompressParallel_NoCompression_SizeIncreases()
 		{
-			var data = GenerateMockData(1024, 1088);
+			var data = GenerateData(1024, 1088);
 
 			byte[] compressedData;
 
@@ -85,9 +88,9 @@ namespace PCx.IO.Compression.Tests
 		{
 			const int bufferSize = 128 * 1024;
 
-			var data = GenerateMockData(1024, 1088);
+			var data = GenerateData(1024, 1088);
 
-			var progress = new MockProgress();
+			var progress = new Progress();
 
 			using (var source = new MemoryStream(data))
 			{
@@ -107,17 +110,14 @@ namespace PCx.IO.Compression.Tests
 		[Fact]
 		public static async Task CompressParallel_ArgumentValidation()
 		{
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(null, CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(null, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, bufferSize: 1, progress: null));
 
-			var closedStream = new MemoryStream();
-			closedStream.Dispose();
+			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.CompressParallelToAsync(ClosedStream, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => closedStream.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.CompressParallelToAsync(closedStream, CompressionLevel.NoCompression, 1, new Progress<double>()));
-
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, -73, new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, bufferSize: -1, progress: new Progress<double>()));
 		}
 
 		[Theory]
@@ -126,7 +126,7 @@ namespace PCx.IO.Compression.Tests
 		[InlineData(CompressionLevel.NoCompression)]
 		public static async Task DecompressParallel_EqualsSourceData(CompressionLevel compressionLevel)
 		{
-			var data = GenerateMockData(1024, 1088);
+			var data = GenerateData(1024, 1088);
 
 			byte[] decompressedData;
 
@@ -155,9 +155,9 @@ namespace PCx.IO.Compression.Tests
 		{
 			const int bufferSize = 128 * 1024;
 
-			var data = GenerateMockData(1024, 1088);
+			var data = GenerateData(1024, 1088);
 
-			var progress = new MockProgress();
+			var progress = new Progress();
 
 			using (var source = new MemoryStream(data))
 			{
@@ -186,76 +186,10 @@ namespace PCx.IO.Compression.Tests
 		{
 			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, Stream.Null, new Progress<double>()));
 			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(null, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(Stream.Null, null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(Stream.Null, progress: null));
 
-			var closedStream = new MemoryStream();
-			closedStream.Dispose();
-
-			await Assert.ThrowsAsync<NotSupportedException>(() => closedStream.DecompressParallelToAsync(Stream.Null, new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.DecompressParallelToAsync(closedStream, new Progress<double>()));
-		}
-
-		#endregion
-
-		#region Mocks
-
-		private static byte[] GenerateMockData(int size, int repeat)
-		{
-			var random = new Random();
-
-			var randomBuffer = new byte[size];
-			random.NextBytes(randomBuffer);
-
-			return Enumerable.Repeat(randomBuffer, repeat).SelectMany(buffer => buffer).ToArray();
-		}
-
-		private sealed class MockProgress : IProgress<double>
-		{
-			#region Fields
-
-			private double _Value;
-
-			private int _Count;
-
-			#endregion
-
-			#region Methods
-
-			public void Assert(int count)
-			{
-				Xunit.Assert.Equal(1.0, _Value);
-
-				Xunit.Assert.Equal(count, _Count);
-			}
-
-			#endregion
-
-			#region IProgress Members
-
-			void IProgress<double>.Report(double value)
-			{
-				#region Contracts
-
-				if (Math.Abs(value) < 1e-15)
-				{
-					throw new ArgumentException("value is zero", nameof(value));
-				}
-
-				if (value < _Value)
-				{
-					throw new ArgumentException("value is less than current value", nameof(value));
-				}
-
-				Contract.EndContractBlock();
-
-				#endregion
-
-				_Value = value;
-
-				++_Count;
-			}
-
-			#endregion
+			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.DecompressParallelToAsync(Stream.Null, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.DecompressParallelToAsync(ClosedStream, new Progress<double>()));
 		}
 
 		#endregion
