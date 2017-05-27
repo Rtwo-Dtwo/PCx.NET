@@ -91,6 +91,58 @@ namespace PCx.IO.Compression.Tests
 			Assert.Throws<ArgumentOutOfRangeException>(() => new DeflateParallelStream(Stream.Null, CompressionLevel.NoCompression, bufferSize: -1, leaveOpen: true));
 		}
 
+		[Fact]
+		public static void DeflateParallelStream_CompressMode_ArgumentValidation()
+		{
+			DeflateParallelStream stream;
+
+			using (stream = new DeflateParallelStream(new MemoryStream(), CompressionMode.Compress))
+			{
+				Assert.Throws<ArgumentNullException>(() => stream.Write(buffer: null, offset: 0, count: 0));
+				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer: new byte[0], offset: -1, count: 0));
+				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer: new byte[0], offset: 0, count: -1));
+				Assert.Throws<ArgumentException>(() => stream.Write(buffer: new byte[0], offset: 0, count: 1));
+				
+				Assert.Throws<InvalidOperationException>(() => stream.Read(new byte[0], 0, 0));
+
+				Assert.Throws<NotSupportedException>(() => stream.Length);
+				Assert.Throws<NotSupportedException>(() => stream.Position);
+				Assert.Throws<NotSupportedException>(() => stream.Position = 0);
+
+				Assert.Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
+				Assert.Throws<NotSupportedException>(() => stream.SetLength(0));
+			}
+
+			Assert.Throws<ObjectDisposedException>(() => stream.Write(new byte[0], 0, 0));
+			Assert.Throws<ObjectDisposedException>(() => stream.Flush());
+		}
+
+		[Fact]
+		public static void DeflateParallelStream_DecompressMode_ArgumentValidation()
+		{
+			DeflateParallelStream stream;
+
+			using (stream = new DeflateParallelStream(new MemoryStream(), CompressionMode.Decompress))
+			{
+				Assert.Throws<ArgumentNullException>(() => stream.Read(buffer: null, offset: 0, count: 0));
+				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer: new byte[0], offset: -1, count: 0));
+				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer: new byte[0], offset: 0, count: -1));
+				Assert.Throws<ArgumentException>(() => stream.Read(buffer: new byte[0], offset: 0, count: 1));
+				
+				Assert.Throws<InvalidOperationException>(() => stream.Write(new byte[0], 0, 0));
+
+				Assert.Throws<NotSupportedException>(() => stream.Length);
+				Assert.Throws<NotSupportedException>(() => stream.Position);
+				Assert.Throws<NotSupportedException>(() => stream.Position = 0);
+
+				Assert.Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
+				Assert.Throws<NotSupportedException>(() => stream.SetLength(0));
+			}
+
+			Assert.Throws<ObjectDisposedException>(() => stream.Read(new byte[0], 0, 0));
+			Assert.Throws<ObjectDisposedException>(() => stream.Flush());
+		}
+
 		#endregion
 	}
 }
