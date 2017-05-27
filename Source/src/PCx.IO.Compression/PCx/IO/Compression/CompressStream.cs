@@ -39,30 +39,37 @@ namespace PCx.IO.Compression
 		{
 			InitializeGraph();
 
-			var bufferPosition = 0;
+			var writeCount = 0;
 
 			while (true)
 			{
-				if (_BufferPosition + (count - bufferPosition) >= _Buffer.Length)
+				var requiredCount = count - writeCount;
+
+				var remainingCount = _Buffer.Length - _BufferPosition;
+
+				if (requiredCount < remainingCount)
 				{
-					var copyCount = _Buffer.Length - _BufferPosition;
-					System.Buffer.BlockCopy(buffer, offset + bufferPosition, _Buffer, _BufferPosition, copyCount);
+					System.Buffer.BlockCopy(buffer, offset + writeCount, _Buffer, _BufferPosition, requiredCount);
 
-					_BufferPosition += copyCount;
-					bufferPosition += copyCount;
+					writeCount += requiredCount;
 
-					SendBuffer();
-				}
-				else
-				{
-					var copyCount = count - bufferPosition;
-					System.Buffer.BlockCopy(buffer, offset + bufferPosition, _Buffer, _BufferPosition, copyCount);
-
-					_BufferPosition += copyCount;
+					_BufferPosition += requiredCount;
 
 					break;
 				}
+				else
+				{
+					System.Buffer.BlockCopy(buffer, offset + writeCount, _Buffer, _BufferPosition, remainingCount);
+
+					writeCount += remainingCount;
+
+					_BufferPosition += remainingCount;
+
+					SendBuffer();
+				}
 			}
+
+			Debug.Assert(writeCount == count);
 		}
 
 		public void Flush()
