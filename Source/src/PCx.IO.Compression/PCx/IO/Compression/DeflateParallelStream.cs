@@ -23,6 +23,8 @@ namespace PCx.IO.Compression
 
 		private readonly DecompressStream _DecompressStream;
 
+		private const int DefaultBufferSize = 81920;
+
 		#endregion
 
 		#region Constructor
@@ -41,7 +43,7 @@ namespace PCx.IO.Compression
 			{
 				case CompressionMode.Compress:
 
-					_CompressStream = new CompressStream(_Stream, CompressionLevel.Optimal, 80 * 1024);
+					_CompressStream = new CompressStream(_Stream, CompressionLevel.Optimal, DefaultBufferSize);
 
 					break;
 
