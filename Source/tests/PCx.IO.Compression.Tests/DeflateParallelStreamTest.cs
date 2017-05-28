@@ -79,6 +79,44 @@ namespace PCx.IO.Compression.Tests
 		}
 
 		[Fact]
+		public static void DeflateParallelStream_CompressMode_NoOperation_StreamUntouched()
+		{
+			using (var stream = new MemoryStream())
+			{
+				using (var compressStream = new DeflateParallelStream(stream, CompressionMode.Compress, leaveOpen: true))
+				{
+					// No Operation
+				}
+
+				Assert.Equal(0, stream.Position);
+				Assert.Equal(0, stream.Length);
+			}
+		}
+
+		[Fact]
+		public static void DeflateParallelStream_DecompressMode_NoOperation_StreamUntouched()
+		{
+			using (var stream = new MemoryStream())
+			{
+				using (var compressStream = new DeflateParallelStream(stream, CompressionMode.Compress, leaveOpen: true))
+				{
+					var data = GenerateData(1024, 1024);
+
+					compressStream.Write(data, 0, data.Length);
+				}
+
+				stream.Seek(0, SeekOrigin.Begin);
+
+				using (var decompressSTream = new DeflateParallelStream(stream, CompressionMode.Decompress, leaveOpen: true))
+				{
+					// No Operation
+				}
+
+				Assert.Equal(0, stream.Position);
+			}
+		}
+
+		[Fact]
 		public static void DeflateParallelStream_Constructor_ArgumentValidation()
 		{
 			Assert.Throws<ArgumentNullException>(() => new DeflateParallelStream(null, CompressionMode.Compress, leaveOpen: true));
