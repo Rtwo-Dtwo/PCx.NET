@@ -22,6 +22,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PCx.IO.Compression
 {
@@ -127,14 +128,14 @@ namespace PCx.IO.Compression
 			return new Buffer(bytes, stream.GetProgress());
 		}
 
-		public void WriteTo(Stream stream)
+		public Task WriteToAsync(Stream stream)
 		{
-			WriteTo(stream, new Progress<double>());
+			return WriteToAsync(stream, new Progress<double>());
 		}
 
-		public void WriteTo(Stream stream, IProgress<double> progress)
+		public async Task WriteToAsync(Stream stream, IProgress<double> progress)
 		{
-			stream.Write(_Bytes, 0, _Bytes.Length);
+			await stream.WriteAsync(_Bytes, 0, _Bytes.Length).ConfigureAwait(false);
 
 			if (Progress.HasValue)
 			{

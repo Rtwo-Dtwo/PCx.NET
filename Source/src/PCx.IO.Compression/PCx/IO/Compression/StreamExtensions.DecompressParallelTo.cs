@@ -110,7 +110,7 @@ namespace PCx.IO.Compression
 			{
 				var buffer = await decompressGraph.ReceiveAsync().ConfigureAwait(false);
 
-				buffer.WriteTo(destination, progress);
+				await buffer.WriteToAsync(destination, progress).ConfigureAwait(false);
 			}
 
 			await decompressGraph.CompleteAsync().ConfigureAwait(false);
