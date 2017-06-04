@@ -22,6 +22,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PCx.IO.Compression
@@ -90,10 +91,15 @@ namespace PCx.IO.Compression
 
 		#region Methods
 
-		public static async Task<Buffer> ReadFromAsync(Stream stream, int size)
+		public static Task<Buffer> ReadFromAsync(Stream stream, int size)
+		{
+			return ReadFromAsync(stream, size, CancellationToken.None);
+		}
+
+		public static async Task<Buffer> ReadFromAsync(Stream stream, int size, CancellationToken cancellationToken)
 		{
 			var readBytes = new byte[size];
-			int readCount = await stream.ReadAsync(readBytes, 0, readBytes.Length).ConfigureAwait(false);
+			int readCount = await stream.ReadAsync(readBytes, 0, readBytes.Length, cancellationToken).ConfigureAwait(false);
 
 			if (readCount == readBytes.Length)
 			{

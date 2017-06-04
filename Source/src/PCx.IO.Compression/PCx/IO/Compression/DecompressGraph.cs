@@ -96,7 +96,7 @@ namespace PCx.IO.Compression
 				BoundedCapacity = boundedCapacity
 			});
 
-			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => Decompress(buffer), new ExecutionDataflowBlockOptions
+			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => DecompressAsync(buffer), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
 				MaxDegreeOfParallelism = Environment.ProcessorCount,
@@ -112,13 +112,13 @@ namespace PCx.IO.Compression
 			sourceBlock = decompressBlock;
 		}
 
-		private static Buffer Decompress(Buffer buffer)
+		private static async Task<Buffer> DecompressAsync(Buffer buffer)
 		{
 			using (var deflate = new DeflateStream(buffer.ToStream(), CompressionMode.Decompress, leaveOpen: false))
 			{
 				using (var destination = new MemoryStream())
 				{
-					deflate.CopyTo(destination);
+					await deflate.CopyToAsync(destination).ConfigureAwait(false);
 
 					return new Buffer(destination.ToArray(), buffer.Progress);
 				}
@@ -131,25 +131,21 @@ namespace PCx.IO.Compression
 			{
 				while (true)
 				{
-					var length = await ReadInt32Async(stream).ConfigureAwait(false);
+					var length = await ReadInt32Async(stream, cancellationToken).ConfigureAwait(false);
 
 					if (!length.HasValue)
 					{
 						break;
 					}
 
-					cancellationToken.ThrowIfCancellationRequested();
-
-					var complementLength = await ReadInt32Async(stream).ConfigureAwait(false);
+					var complementLength = await ReadInt32Async(stream, cancellationToken).ConfigureAwait(false);
 
 					if (!complementLength.HasValue || (~length.Value != complementLength.Value))
 					{
 						throw new IOException("Source stream is not well-formed");
 					}
 					
-					cancellationToken.ThrowIfCancellationRequested();
-					
-					var buffer = await Buffer.ReadFromAsync(stream, length.Value).ConfigureAwait(false);
+					var buffer = await Buffer.ReadFromAsync(stream, length.Value, cancellationToken).ConfigureAwait(false);
 
 					if (buffer.Size != length.Value)
 					{
@@ -168,11 +164,11 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private static async Task<int?> ReadInt32Async(Stream stream)
+		private static async Task<int?> ReadInt32Async(Stream stream, CancellationToken cancellationToken)
 		{
 			var bytes = new byte[4];
 
-			if (await stream.ReadAsync(bytes, 0, bytes.Length).ConfigureAwait(false) == bytes.Length)
+			if (await stream.ReadAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false) == bytes.Length)
 			{
 				if (!BitConverter.IsLittleEndian)
 				{
