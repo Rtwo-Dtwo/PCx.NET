@@ -90,42 +90,24 @@ namespace PCx.IO.Compression
 
 		#region Methods
 
-		public static bool TryReadFrom(Stream stream, int size, out Buffer buffer)
+		public static async Task<Buffer> ReadFromAsync(Stream stream, int size)
 		{
 			var readBytes = new byte[size];
-			int readCount = stream.Read(readBytes, 0, readBytes.Length);
+			int readCount = await stream.ReadAsync(readBytes, 0, readBytes.Length).ConfigureAwait(false);
 
 			if (readCount == readBytes.Length)
 			{
-				buffer = new Buffer(readBytes, stream.GetProgress());
-
-				return true;
+				return new Buffer(readBytes, stream.GetProgress());
 			}
 			else if (readCount > 0)
 			{
 				var bytes = new byte[readCount];
 				System.Buffer.BlockCopy(readBytes, 0, bytes, 0, readCount);
 
-				buffer = new Buffer(bytes, stream.GetProgress());
-
-				return true;
+				return new Buffer(bytes, stream.GetProgress());
 			}
 
-			buffer = null;
-
-			return false;
-		}
-
-		public static Buffer ReadFrom(Stream stream, int size)
-		{
-			var bytes = new byte[size];
-
-			if (stream.Read(bytes, 0, bytes.Length) != size)
-			{
-				throw new IOException("Source stream is not well-formed");
-			}
-
-			return new Buffer(bytes, stream.GetProgress());
+			return Empty;
 		}
 
 		public Task WriteToAsync(Stream stream)

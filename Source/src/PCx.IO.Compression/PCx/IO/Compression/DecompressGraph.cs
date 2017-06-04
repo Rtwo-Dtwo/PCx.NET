@@ -129,17 +129,33 @@ namespace PCx.IO.Compression
 		{
 			try
 			{
-				while (TryRead(stream, out var length))
+				while (true)
 				{
-					if (!TryRead(stream, out var complementLength) || (~length != complementLength))
+					var length = await ReadInt32Async(stream).ConfigureAwait(false);
+
+					if (!length.HasValue)
+					{
+						break;
+					}
+
+					cancellationToken.ThrowIfCancellationRequested();
+
+					var complementLength = await ReadInt32Async(stream).ConfigureAwait(false);
+
+					if (!complementLength.HasValue || (~length.Value != complementLength.Value))
 					{
 						throw new IOException("Source stream is not well-formed");
 					}
 					
 					cancellationToken.ThrowIfCancellationRequested();
 					
-					var buffer = Buffer.ReadFrom(stream, length);
-					
+					var buffer = await Buffer.ReadFromAsync(stream, length.Value).ConfigureAwait(false);
+
+					if (buffer.Size != length.Value)
+					{
+						throw new IOException("Source stream is not well-formed");
+					}
+
 					await _TargetBlock.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
 				}
 			}
@@ -152,25 +168,21 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private static bool TryRead(Stream stream, out int value)
+		private static async Task<int?> ReadInt32Async(Stream stream)
 		{
 			var bytes = new byte[4];
 
-			if (stream.Read(bytes, 0, bytes.Length) == bytes.Length)
+			if (await stream.ReadAsync(bytes, 0, bytes.Length).ConfigureAwait(false) == bytes.Length)
 			{
 				if (!BitConverter.IsLittleEndian)
 				{
 					Array.Reverse(bytes);
 				}
 
-				value = BitConverter.ToInt32(bytes, 0);
-
-				return true;
+				return BitConverter.ToInt32(bytes, 0);
 			}
 
-			value = default(int);
-
-			return false;
+			return null;
 		}
 
 		#endregion
