@@ -125,7 +125,7 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private async Task ReadAsync(Stream stream, CancellationToken cancealltionToken)
+		private async Task ReadAsync(Stream stream, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -136,11 +136,11 @@ namespace PCx.IO.Compression
 						throw new IOException("Source stream is not well-formed");
 					}
 					
-					cancealltionToken.ThrowIfCancellationRequested();
+					cancellationToken.ThrowIfCancellationRequested();
 					
 					var buffer = Buffer.ReadFrom(stream, length);
 					
-					await _TargetBlock.SendAsync(buffer, cancealltionToken).ConfigureAwait(false);
+					await _TargetBlock.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
 				}
 			}
 			catch (OperationCanceledException)
