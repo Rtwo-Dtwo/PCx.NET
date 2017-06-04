@@ -229,12 +229,12 @@ namespace PCx.IO.Compression
 				throw new ArgumentNullException(nameof(buffer));
 			}
 
-            if (offset < 0)
+			if (offset < 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(offset));
 			}
 
-            if (count < 0)
+			if (count < 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(count));
 			}
