@@ -103,9 +103,9 @@ namespace PCx.IO.Compression
 
 		private bool ReceiveBuffer()
 		{
-			if (_DecompressGraph.OutputAvailableAsync().Result)
+			if (_DecompressGraph.OutputAvailableAsync().GetAwaiter().GetResult())
 			{
-				_Buffer = _DecompressGraph.ReceiveAsync().Result;
+				_Buffer = _DecompressGraph.ReceiveAsync().GetAwaiter().GetResult();
 
 				_BufferPosition = 0;
 
@@ -133,7 +133,7 @@ namespace PCx.IO.Compression
 					{
 						try
 						{
-							_DecompressGraph.CompleteAsync().Wait();
+							_DecompressGraph.CompleteAsync().GetAwaiter().GetResult();
 						}
 						finally
 						{

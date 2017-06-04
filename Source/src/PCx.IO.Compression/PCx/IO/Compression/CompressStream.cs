@@ -119,7 +119,7 @@ namespace PCx.IO.Compression
 			{
 				if (_Buffer.Size == _BufferPosition)
 				{
-					_CompressGraph.SendAsync(_Buffer).Wait();
+					_CompressGraph.SendAsync(_Buffer).GetAwaiter().GetResult();
 
 					_Buffer = new Buffer(_BufferSize);
 				}
@@ -127,7 +127,7 @@ namespace PCx.IO.Compression
 				{
 					var buffer = new Buffer(_Buffer, _BufferPosition);
 
-					_CompressGraph.SendAsync(buffer).Wait();
+					_CompressGraph.SendAsync(buffer).GetAwaiter().GetResult();
 				}
 
 				_BufferPosition = 0;
@@ -150,7 +150,7 @@ namespace PCx.IO.Compression
 						{
 							SendBuffer();
 
-							_CompressGraph.CompleteAsync().Wait();
+							_CompressGraph.CompleteAsync().GetAwaiter().GetResult();
 						}
 						finally
 						{
