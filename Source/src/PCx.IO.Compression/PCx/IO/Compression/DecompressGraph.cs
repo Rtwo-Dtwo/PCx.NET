@@ -70,20 +70,20 @@ namespace PCx.IO.Compression
 		{
 			_Cancellation.Cancel();
 
-			await _ReadStream;
+			await _ReadStream.ConfigureAwait(false);
 
-			await FlushAsync();
+			await FlushAsync().ConfigureAwait(false);
 
-			await _SourceBlock.Completion;
+			await _SourceBlock.Completion.ConfigureAwait(false);
 
 			_Cancellation.Dispose();
 		}
 
 		private async Task FlushAsync()
 		{
-			while (await _SourceBlock.OutputAvailableAsync())
+			while (await _SourceBlock.OutputAvailableAsync().ConfigureAwait(false))
 			{
-				await _SourceBlock.ReceiveAsync();
+				await _SourceBlock.ReceiveAsync().ConfigureAwait(false);
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace PCx.IO.Compression
 					
 					var buffer = Buffer.ReadFrom(stream, length);
 					
-					await _TargetBlock.SendAsync(buffer, cancealltionToken);
+					await _TargetBlock.SendAsync(buffer, cancealltionToken).ConfigureAwait(false);
 				}
 			}
 			catch (OperationCanceledException)

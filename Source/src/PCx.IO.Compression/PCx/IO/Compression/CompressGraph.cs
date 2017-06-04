@@ -67,9 +67,9 @@ namespace PCx.IO.Compression
 		{
 			_TargetBlock.Complete();
 
-			await _SourceBlock.Completion;
+			await _SourceBlock.Completion.ConfigureAwait(false);
 
-			await _WriteStream;
+			await _WriteStream.ConfigureAwait(false);
 		}
 
 		private static void BuildGraph(CompressionLevel compressionLevel, out ITargetBlock<Buffer> targetBlock, out ISourceBlock<Buffer> sourceBlock)
@@ -112,9 +112,9 @@ namespace PCx.IO.Compression
 
 		private async Task WriteAsync(Stream stream, IProgress<double> progress)
 		{
-			while (await _SourceBlock.OutputAvailableAsync())
+			while (await _SourceBlock.OutputAvailableAsync().ConfigureAwait(false))
 			{
-				var buffer = await _SourceBlock.ReceiveAsync();
+				var buffer = await _SourceBlock.ReceiveAsync().ConfigureAwait(false);
 
 				Write(stream, buffer.Size);
 				Write(stream, ~buffer.Size);

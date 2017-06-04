@@ -106,14 +106,14 @@ namespace PCx.IO.Compression
 
 			var decompressGraph = new DecompressGraph(source);
 
-			while (await decompressGraph.OutputAvailableAsync())
+			while (await decompressGraph.OutputAvailableAsync().ConfigureAwait(false))
 			{
-				var buffer = await decompressGraph.ReceiveAsync();
+				var buffer = await decompressGraph.ReceiveAsync().ConfigureAwait(false);
 
 				buffer.WriteTo(destination, progress);
 			}
 
-			await decompressGraph.CompleteAsync();
+			await decompressGraph.CompleteAsync().ConfigureAwait(false);
 
 			progress.Report(1.0);
 		}

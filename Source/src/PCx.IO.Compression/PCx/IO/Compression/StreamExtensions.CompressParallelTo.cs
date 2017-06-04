@@ -128,10 +128,10 @@ namespace PCx.IO.Compression
 
 			while (Buffer.TryReadFrom(source, bufferSize, out var buffer))
 			{
-				await compressGraph.SendAsync(buffer);
+				await compressGraph.SendAsync(buffer).ConfigureAwait(false);
 			}
 
-			await compressGraph.CompleteAsync();
+			await compressGraph.CompleteAsync().ConfigureAwait(false);
 
 			progress.Report(1.0);
 		}
