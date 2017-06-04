@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Title>Parallel Compression Extensions (PCx)</Title>
     <Authors>Christian Winter (Rtwo-Dtwo)</Authors>
     <Description>Provides parallel compression extensions to IO streams for .NET</Description>
