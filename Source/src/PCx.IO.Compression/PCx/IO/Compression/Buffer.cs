@@ -1,6 +1,6 @@
 // Copyright (c) 2017 Christian Winter <Christian.Winter81@me.com>
 //
-// This file is part of PCx.NET.
+// This file is part of PCx.NET <https://github.com/Rtwo-Dtwo/PCx.NET>.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
