@@ -23,6 +23,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -116,23 +117,26 @@ namespace PCx.IO.Compression
 			{
 				var buffer = await _SourceBlock.ReceiveAsync().ConfigureAwait(false);
 
-				await WriteAsync(stream, buffer.Size).ConfigureAwait(false);
-				await WriteAsync(stream, ~buffer.Size).ConfigureAwait(false);
+				WriteHeader(stream, buffer.Size);
 
 				buffer.WriteTo(stream, progress);
 			}
 		}
 
-		private static Task WriteAsync(Stream stream, int value)
+		private static void WriteHeader(Stream stream, int length)
 		{
-			var bytes = BitConverter.GetBytes(value);
+			var lengthBytes = BitConverter.GetBytes(length);
+			var complementLengthBytes = BitConverter.GetBytes(~length);
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				Array.Reverse(bytes);
+				Array.Reverse(lengthBytes);
+				Array.Reverse(complementLengthBytes);
 			}
 
-			return stream.WriteAsync(bytes, 0, bytes.Length);
+			var bytes = lengthBytes.Concat(complementLengthBytes).ToArray();
+
+			stream.Write(bytes, 0, bytes.Length);
 		}
 
 		#endregion
