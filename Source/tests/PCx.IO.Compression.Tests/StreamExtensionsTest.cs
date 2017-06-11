@@ -27,20 +27,30 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using static PCx.IO.Compression.Tests.Mock;
 
 namespace PCx.IO.Compression.Tests
 {
-	public static class StreamExtensionsTest
+	[TestClass]
+	public sealed class StreamExtensionsTest
 	{
 		#region Tests
 
-		[Theory]
-		[InlineData(CompressionLevel.Optimal)]
-		[InlineData(CompressionLevel.Fastest)]
-		public static async Task CompressParallel_SizeDecreases(CompressionLevel compressionLevel)
+		[TestMethod]
+		public async Task CompressParallel_Optimal_SizeDecreases()
+		{
+			await CompressParallel_SizeDecreases(CompressionLevel.Optimal);
+		}
+
+		[TestMethod]
+		public async Task CompressParallel_Fastest_SizeDecreases()
+		{
+			await CompressParallel_SizeDecreases(CompressionLevel.Fastest);
+		}
+
+		private static async Task CompressParallel_SizeDecreases(CompressionLevel compressionLevel)
 		{
 			var data = GenerateData(1024, 1088);
 
@@ -58,11 +68,11 @@ namespace PCx.IO.Compression.Tests
 
 			Console.WriteLine($"Source size = {data.Length} -> Compressed size = {compressedData.Length} ({compressionLevel})");
 
-			Assert.True(compressedData.Length < data.Length);
+			Assert.IsTrue(compressedData.Length < data.Length);
 		}
 
-		[Fact]
-		public static async Task CompressParallel_NoCompression_SizeIncreases()
+		[TestMethod]
+		public async Task CompressParallel_NoCompression_SizeIncreases()
 		{
 			var data = GenerateData(1024, 1088);
 
@@ -80,11 +90,11 @@ namespace PCx.IO.Compression.Tests
 
 			Console.WriteLine($"Source size = {data.Length} -> Compressed size = {compressedData.Length} ({CompressionLevel.NoCompression})");
 
-			Assert.True(compressedData.Length > data.Length);
+			Assert.IsTrue(compressedData.Length > data.Length);
 		}
 
-		[Fact]
-		public static async Task CompressParallel_ReportsProgress()
+		[TestMethod]
+		public async Task CompressParallel_ReportsProgress()
 		{
 			const int bufferSize = 128 * 1024;
 
@@ -107,24 +117,38 @@ namespace PCx.IO.Compression.Tests
 			progress.Assert(count);
 		}
 
-		[Fact]
-		public static async Task CompressParallel_ArgumentValidation()
+		[TestMethod]
+		public async Task CompressParallel_ArgumentValidation()
 		{
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, null, CancellationToken.None));
+			await ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, null, CancellationToken.None));
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
-			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.CompressParallelToAsync(ClosedStream, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<NotSupportedException>(() => ClosedStream.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<NotSupportedException>(() => Stream.Null.CompressParallelToAsync(ClosedStream, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
 
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, -1, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<ArgumentOutOfRangeException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, -1, new Progress<double>(), CancellationToken.None));
 		}
 
-		[Theory]
-		[InlineData(CompressionLevel.Optimal)]
-		[InlineData(CompressionLevel.Fastest)]
-		[InlineData(CompressionLevel.NoCompression)]
-		public static async Task DecompressParallel_EqualsSourceData(CompressionLevel compressionLevel)
+		[TestMethod]
+		public async Task DecompressParallel_Optimal_EqualsSourceData()
+		{
+			await DecompressParallel_EqualsSourceData(CompressionLevel.Optimal);
+		}
+
+		[TestMethod]
+		public async Task DecompressParallel_Fastest_EqualsSourceData()
+		{
+			await DecompressParallel_EqualsSourceData(CompressionLevel.Fastest);
+		}
+
+		[TestMethod]
+		public async Task DecompressParallel_NoCompression_EqualsSourceData()
+		{
+			await DecompressParallel_EqualsSourceData(CompressionLevel.NoCompression);
+		}
+
+		private static async Task DecompressParallel_EqualsSourceData(CompressionLevel compressionLevel)
 		{
 			var data = GenerateData(1024, 1088);
 
@@ -147,11 +171,11 @@ namespace PCx.IO.Compression.Tests
 				}
 			}
 
-			Assert.True(data.SequenceEqual(decompressedData));
+			Assert.IsTrue(data.SequenceEqual(decompressedData));
 		}
 
-		[Fact]
-		public static async Task DecompressParallel_ReportsProgress()
+		[TestMethod]
+		public async Task DecompressParallel_ReportsProgress()
 		{
 			const int bufferSize = 128 * 1024;
 
@@ -181,15 +205,15 @@ namespace PCx.IO.Compression.Tests
 			progress.Assert(count);
 		}
 
-		[Fact]
-		public static async Task DecompressParallel_ArgumentValidation()
+		[TestMethod]
+		public async Task DecompressParallel_ArgumentValidation()
 		{
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, Stream.Null, new Progress<double>(), CancellationToken.None));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(null, new Progress<double>(), CancellationToken.None));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(Stream.Null, null, CancellationToken.None));
+			await ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, Stream.Null, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(null, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(Stream.Null, null, CancellationToken.None));
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.DecompressParallelToAsync(Stream.Null, new Progress<double>(), CancellationToken.None));
-			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.DecompressParallelToAsync(ClosedStream, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<NotSupportedException>(() => ClosedStream.DecompressParallelToAsync(Stream.Null, new Progress<double>(), CancellationToken.None));
+			await ThrowsAsync<NotSupportedException>(() => Stream.Null.DecompressParallelToAsync(ClosedStream, new Progress<double>(), CancellationToken.None));
 		}
 
 		#endregion

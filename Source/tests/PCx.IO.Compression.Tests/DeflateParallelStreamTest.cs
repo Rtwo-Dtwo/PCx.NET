@@ -26,13 +26,14 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using static PCx.IO.Compression.Tests.Mock;
 
 namespace PCx.IO.Compression.Tests
 {
-	public static class DeflateParallelStreamTest
+	[TestClass]
+	public sealed class DeflateParallelStreamTest
 	{
 		#region Fields
 
@@ -52,23 +53,32 @@ namespace PCx.IO.Compression.Tests
 
 		#region Tests
 
-		[Fact]
-		public static void DeflateParallelStream_Constructor_ArgumentValidation()
+		[TestMethod]
+		public void DeflateParallelStream_Constructor_ArgumentValidation()
 		{
-			Assert.Throws<ArgumentNullException>(() => new DeflateParallelStream(null, CompressionMode.Compress, leaveOpen: true));
-			Assert.Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionMode.Compress, leaveOpen: true));
-			Assert.Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionMode.Decompress, leaveOpen: true));
+			Throws<ArgumentNullException>(() => new DeflateParallelStream(null, CompressionMode.Compress, leaveOpen: true));
+			Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionMode.Compress, leaveOpen: true));
+			Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionMode.Decompress, leaveOpen: true));
 
-			Assert.Throws<ArgumentNullException>(() => new DeflateParallelStream(null, CompressionLevel.NoCompression, bufferSize: 1, leaveOpen: true));
-			Assert.Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionLevel.NoCompression, bufferSize: 1, leaveOpen: true));
+			Throws<ArgumentNullException>(() => new DeflateParallelStream(null, CompressionLevel.NoCompression, bufferSize: 1, leaveOpen: true));
+			Throws<NotSupportedException>(() => new DeflateParallelStream(ClosedStream, CompressionLevel.NoCompression, bufferSize: 1, leaveOpen: true));
 			
-			Assert.Throws<ArgumentOutOfRangeException>(() => new DeflateParallelStream(Stream.Null, CompressionLevel.NoCompression, bufferSize: -1, leaveOpen: true));
+			Throws<ArgumentOutOfRangeException>(() => new DeflateParallelStream(Stream.Null, CompressionLevel.NoCompression, bufferSize: -1, leaveOpen: true));
 		}
 
-		[Theory]
-		[InlineData(CompressionLevel.Optimal)]
-		[InlineData(CompressionLevel.Fastest)]
-		public static void DeflateParallelStream_Compress_SizeDecreases(CompressionLevel compressionLevel)
+		[TestMethod]
+		public void DeflateParallelStream_Compress_Optimal_SizeDecreases()
+		{
+			DeflateParallelStream_Compress_SizeDecreases(CompressionLevel.Optimal);
+		}
+
+		[TestMethod]
+		public void DeflateParallelStream_Compress_Fastest_SizeDecreases()
+		{
+			DeflateParallelStream_Compress_SizeDecreases(CompressionLevel.Fastest);
+		}
+
+		private static void DeflateParallelStream_Compress_SizeDecreases(CompressionLevel compressionLevel)
 		{
 			byte[] compressedData;
 
@@ -87,11 +97,11 @@ namespace PCx.IO.Compression.Tests
 
 			Console.WriteLine($"Source size = {DataListSize} -> Compressed size = {compressedData.Length} ({compressionLevel})");
 
-			Assert.True(compressedData.Length < DataListSize);
+			Assert.IsTrue(compressedData.Length < DataListSize);
 		}
 
-		[Fact]
-		public static void DeflateParallelStream_Compress_SizeIncreases()
+		[TestMethod]
+		public void DeflateParallelStream_Compress_SizeIncreases()
 		{
 			byte[] compressedData;
 
@@ -110,11 +120,11 @@ namespace PCx.IO.Compression.Tests
 
 			Console.WriteLine($"Source size = {DataListSize} -> Compressed size = {compressedData.Length} (NoCompression)");
 
-			Assert.True(compressedData.Length > DataListSize);
+			Assert.IsTrue(compressedData.Length > DataListSize);
 		}
 
-		[Fact]
-		public static void DeflateParallelStream_Compress_NoOperation_StreamUntouched()
+		[TestMethod]
+		public void DeflateParallelStream_Compress_NoOperation_StreamUntouched()
 		{
 			using (var stream = new MemoryStream())
 			{
@@ -123,41 +133,55 @@ namespace PCx.IO.Compression.Tests
 					// No Operation
 				}
 
-				Assert.Equal(0, stream.Position);
-				Assert.Equal(0, stream.Length);
+				Assert.AreEqual(0, stream.Position);
+				Assert.AreEqual(0, stream.Length);
 			}
 		}
 
-		[Fact]
-		public static void DeflateParallelStream_Compress_ArgumentValidation()
+		[TestMethod]
+		public void DeflateParallelStream_Compress_ArgumentValidation()
 		{
 			DeflateParallelStream stream;
 
 			using (stream = new DeflateParallelStream(new MemoryStream(), CompressionMode.Compress))
 			{
-				Assert.Throws<ArgumentNullException>(() => stream.Write(buffer: null, offset: 0, count: 0));
-				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer: new byte[0], offset: -1, count: 0));
-				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer: new byte[0], offset: 0, count: -1));
-				Assert.Throws<ArgumentException>(() => stream.Write(buffer: new byte[0], offset: 0, count: 1));
+				Throws<ArgumentNullException>(() => stream.Write(buffer: null, offset: 0, count: 0));
+				Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer: new byte[0], offset: -1, count: 0));
+				Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer: new byte[0], offset: 0, count: -1));
+				Throws<ArgumentException>(() => stream.Write(buffer: new byte[0], offset: 0, count: 1));
 				
-				Assert.Throws<InvalidOperationException>(() => stream.Read(new byte[0], 0, 0));
+				Throws<InvalidOperationException>(() => stream.Read(new byte[0], 0, 0));
 
-				Assert.Throws<NotSupportedException>(() => stream.Length);
-				Assert.Throws<NotSupportedException>(() => stream.Position);
-				Assert.Throws<NotSupportedException>(() => stream.Position = 0);
+				Throws<NotSupportedException>(() => stream.Length);
+				Throws<NotSupportedException>(() => stream.Position);
+				Throws<NotSupportedException>(() => stream.Position = 0);
 
-				Assert.Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
-				Assert.Throws<NotSupportedException>(() => stream.SetLength(0));
+				Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
+				Throws<NotSupportedException>(() => stream.SetLength(0));
 			}
 
-			Assert.Throws<ObjectDisposedException>(() => stream.Write(new byte[0], 0, 0));
-			Assert.Throws<ObjectDisposedException>(() => stream.Flush());
+			Throws<ObjectDisposedException>(() => stream.Write(new byte[0], 0, 0));
+			Throws<ObjectDisposedException>(() => stream.Flush());
 		}
 
-		[Theory]
-		[InlineData(CompressionLevel.Optimal)]
-		[InlineData(CompressionLevel.Fastest)]
-		[InlineData(CompressionLevel.NoCompression)]
+		[TestMethod]
+		public void DeflateParallelStream_Decompress_Optimal_EqualsSourceData()
+		{
+			DeflateParallelStream_Decompress_EqualsSourceData(CompressionLevel.Optimal);
+		}
+
+		[TestMethod]
+		public void DeflateParallelStream_Decompress_Fastest_EqualsSourceData()
+		{
+			DeflateParallelStream_Decompress_EqualsSourceData(CompressionLevel.Fastest);
+		}
+
+		[TestMethod]
+		public void DeflateParallelStream_Decompress_NoCompression_EqualsSourceData()
+		{
+			DeflateParallelStream_Decompress_EqualsSourceData(CompressionLevel.NoCompression);
+		}
+
 		public static void DeflateParallelStream_Decompress_EqualsSourceData(CompressionLevel compressionLevel)
 		{
 			byte[] compressedData;
@@ -188,11 +212,11 @@ namespace PCx.IO.Compression.Tests
 				}
 			}
 
-			Assert.True(DataListFlat.SequenceEqual(decompressedData));
+			Assert.IsTrue(DataListFlat.SequenceEqual(decompressedData));
 		}
 
-		[Fact]
-		public static void DeflateParallelStream_Decompress_NoOperation_StreamUntouched()
+		[TestMethod]
+		public void DeflateParallelStream_Decompress_NoOperation_StreamUntouched()
 		{
 			using (var stream = new MemoryStream())
 			{
@@ -210,34 +234,34 @@ namespace PCx.IO.Compression.Tests
 					// No Operation
 				}
 
-				Assert.Equal(0, stream.Position);
+				Assert.AreEqual(0, stream.Position);
 			}
 		}
 
-		[Fact]
-		public static void DeflateParallelStream_Decompress_ArgumentValidation()
+		[TestMethod]
+		public void DeflateParallelStream_Decompress_ArgumentValidation()
 		{
 			DeflateParallelStream stream;
 
 			using (stream = new DeflateParallelStream(new MemoryStream(), CompressionMode.Decompress))
 			{
-				Assert.Throws<ArgumentNullException>(() => stream.Read(buffer: null, offset: 0, count: 0));
-				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer: new byte[0], offset: -1, count: 0));
-				Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer: new byte[0], offset: 0, count: -1));
-				Assert.Throws<ArgumentException>(() => stream.Read(buffer: new byte[0], offset: 0, count: 1));
+				Throws<ArgumentNullException>(() => stream.Read(buffer: null, offset: 0, count: 0));
+				Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer: new byte[0], offset: -1, count: 0));
+				Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer: new byte[0], offset: 0, count: -1));
+				Throws<ArgumentException>(() => stream.Read(buffer: new byte[0], offset: 0, count: 1));
 				
-				Assert.Throws<InvalidOperationException>(() => stream.Write(new byte[0], 0, 0));
+				Throws<InvalidOperationException>(() => stream.Write(new byte[0], 0, 0));
 
-				Assert.Throws<NotSupportedException>(() => stream.Length);
-				Assert.Throws<NotSupportedException>(() => stream.Position);
-				Assert.Throws<NotSupportedException>(() => stream.Position = 0);
+				Throws<NotSupportedException>(() => stream.Length);
+				Throws<NotSupportedException>(() => stream.Position);
+				Throws<NotSupportedException>(() => stream.Position = 0);
 
-				Assert.Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
-				Assert.Throws<NotSupportedException>(() => stream.SetLength(0));
+				Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
+				Throws<NotSupportedException>(() => stream.SetLength(0));
 			}
 
-			Assert.Throws<ObjectDisposedException>(() => stream.Read(new byte[0], 0, 0));
-			Assert.Throws<ObjectDisposedException>(() => stream.Flush());
+			Throws<ObjectDisposedException>(() => stream.Read(new byte[0], 0, 0));
+			Throws<ObjectDisposedException>(() => stream.Flush());
 		}
 
 		#endregion

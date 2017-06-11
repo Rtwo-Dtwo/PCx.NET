@@ -24,6 +24,9 @@ using System;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PCx.IO.Compression.Tests
 {
@@ -56,6 +59,70 @@ namespace PCx.IO.Compression.Tests
 			return Enumerable.Repeat(randomBuffer, repeat).SelectMany(buffer => buffer).ToArray();
 		}
 
+		public static TException Throws<TException>(Action testCode)
+			where TException : Exception
+		{
+			return Throws(Record<TException>(() =>
+			{
+				testCode();
+
+				return null;
+			}));
+		}
+
+		public static TException Throws<TException>(Func<object> testCode)
+			where TException : Exception
+		{
+			return Throws(Record<TException>(testCode));
+		}
+
+		public static async Task<TException> ThrowsAsync<TException>(Func<Task> testCode)
+			where TException : Exception
+		{
+			return Throws(await RecordAsync<TException>(testCode));
+		}
+
+		private static TException Record<TException>(Func<object> testCode)
+			where TException : Exception
+		{
+			try
+			{
+				testCode();
+			}
+			catch (TException exception)
+			{
+				return exception;
+			}
+
+			return null;
+		}
+
+		private static async Task<TException> RecordAsync<TException>(Func<Task> testCode)
+			where TException : Exception
+		{
+			try
+			{
+				await testCode();
+			}
+			catch (TException exception)
+			{
+				return exception;
+			}
+
+			return null;
+		}
+
+		private static TException Throws<TException>(TException exception)
+			where TException : Exception
+		{
+			if (exception == null)
+			{
+				Assert.Fail($"Expected exception of type {typeof(TException)} not thrown");
+			}
+
+			return exception;
+		}
+
 		#endregion
 
 		#region Progress
@@ -74,9 +141,9 @@ namespace PCx.IO.Compression.Tests
 
 			public void Assert(int count)
 			{
-				Xunit.Assert.Equal(1.0, _Value);
+				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(1.0, _Value);
 
-				Xunit.Assert.Equal(count, _Count);
+				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(count, _Count);
 			}
 
 			#endregion
