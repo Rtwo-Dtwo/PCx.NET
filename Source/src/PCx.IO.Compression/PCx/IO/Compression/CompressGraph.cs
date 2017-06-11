@@ -54,6 +54,18 @@ namespace PCx.IO.Compression
 
 		#endregion
 
+		#region Properties
+
+		public Task Completion
+		{
+			get
+			{
+				return _CompletionBlock.Completion;
+			}
+		}
+
+		#endregion
+
 		#region Methods
 
 		public Task SendAsync(Buffer buffer)
@@ -66,11 +78,9 @@ namespace PCx.IO.Compression
 			return _TargetBlock.SendAsync(buffer, cancellationToken);
 		}
 
-		public async Task CompleteAsync()
+		public void Complete()
 		{
 			_TargetBlock.Complete();
-
-			await _CompletionBlock.Completion.ConfigureAwait(false);
 		}
 
 		private static void BuildGraph(Stream stream, CompressionLevel compressionLevel, IProgress<double> progress, out ITargetBlock<Buffer> targetBlock, out IDataflowBlock completionBlock)

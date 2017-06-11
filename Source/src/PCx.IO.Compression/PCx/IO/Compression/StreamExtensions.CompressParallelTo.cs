@@ -138,7 +138,9 @@ namespace PCx.IO.Compression
 				await compressGraph.SendAsync(buffer).ConfigureAwait(false);
 			}
 
-			await compressGraph.CompleteAsync().ConfigureAwait(false);
+			compressGraph.Complete();
+				
+			await compressGraph.Completion.ConfigureAwait(false);
 
 			progress.Report(1.0);
 		}

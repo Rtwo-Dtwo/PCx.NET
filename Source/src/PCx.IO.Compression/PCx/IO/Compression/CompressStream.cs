@@ -152,7 +152,9 @@ namespace PCx.IO.Compression
 						{
 							SendBufferAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-							_CompressGraph.CompleteAsync().GetAwaiter().GetResult();
+							_CompressGraph.Complete();
+								
+							_CompressGraph.Completion.GetAwaiter().GetResult();
 						}
 						finally
 						{
