@@ -23,10 +23,7 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-
-using Xunit;
 
 namespace PCx.IO.Compression.Tests
 {
