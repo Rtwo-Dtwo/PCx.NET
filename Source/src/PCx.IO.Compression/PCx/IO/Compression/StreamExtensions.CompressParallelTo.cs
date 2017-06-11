@@ -158,21 +158,26 @@ namespace PCx.IO.Compression
 
 			var compressGraph = new CompressGraph(destination, compressionLevel, progress);
 
-			while (true)
+			try
 			{
-				var buffer = Buffer.ReadFrom(source, bufferSize);
-
-				if (buffer.Size == 0)
+				while (true)
 				{
-					break;
+					var buffer = Buffer.ReadFrom(source, bufferSize);
+
+					if (buffer.Size == 0)
+					{
+						break;
+					}
+
+					await compressGraph.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
 				}
-
-				await compressGraph.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
 			}
+			finally
+			{
+				compressGraph.Complete();
 
-			compressGraph.Complete();
-				
-			await compressGraph.Completion.ConfigureAwait(false);
+				await compressGraph.Completion.ConfigureAwait(false);
+			}
 
 			progress.Report(1.0);
 		}
