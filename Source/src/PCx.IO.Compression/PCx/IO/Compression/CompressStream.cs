@@ -24,6 +24,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PCx.IO.Compression
 {
@@ -61,7 +63,7 @@ namespace PCx.IO.Compression
 
 		#region Methods
 
-		public void Write(byte[] buffer, int offset, int count)
+		public async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
 			InitializeGraph();
 
@@ -91,16 +93,16 @@ namespace PCx.IO.Compression
 
 					_BufferPosition += remainingCount;
 
-					SendBuffer();
+					await SendBufferAsync(cancellationToken).ConfigureAwait(false);
 				}
 			}
 
 			Debug.Assert(writeCount == count);
 		}
 
-		public void Flush()
+		public Task FlushAsync(CancellationToken cancellationToken)
 		{
-			SendBuffer();
+			return SendBufferAsync(cancellationToken);
 		}
 
 		private void InitializeGraph()
@@ -113,13 +115,13 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private void SendBuffer()
+		private async Task SendBufferAsync(CancellationToken cancellationToken)
 		{
 			if (_BufferPosition > 0)
 			{
 				if (_Buffer.Size == _BufferPosition)
 				{
-					_CompressGraph.SendAsync(_Buffer).GetAwaiter().GetResult();
+					await _CompressGraph.SendAsync(_Buffer, cancellationToken).ConfigureAwait(false);
 
 					_Buffer = new Buffer(_BufferSize);
 				}
@@ -127,7 +129,7 @@ namespace PCx.IO.Compression
 				{
 					var buffer = new Buffer(_Buffer, _BufferPosition);
 
-					_CompressGraph.SendAsync(buffer).GetAwaiter().GetResult();
+					await _CompressGraph.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
 				}
 
 				_BufferPosition = 0;
@@ -148,7 +150,7 @@ namespace PCx.IO.Compression
 					{
 						try
 						{
-							SendBuffer();
+							SendBufferAsync(CancellationToken.None).GetAwaiter().GetResult();
 
 							_CompressGraph.CompleteAsync().GetAwaiter().GetResult();
 						}

@@ -24,6 +24,8 @@ using System;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PCx.IO.Compression
 {
@@ -359,7 +361,26 @@ namespace PCx.IO.Compression
 			EnsureNotDisposed();
 			EnsureCompressionMode();
 
-			_CompressStream.Write(buffer, offset, count);
+			_CompressStream.WriteAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
+		}
+
+		/// <summary>
+		/// See <see cref="Stream.WriteAsync(byte[], int, int, CancellationToken)"/> 
+		/// </summary>
+		public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		{
+			#region Contracts
+
+			ValidateParameters(buffer, offset, count);
+
+			Contract.EndContractBlock();
+
+			#endregion
+
+			EnsureNotDisposed();
+			EnsureCompressionMode();
+
+			return _CompressStream.WriteAsync(buffer, offset, count, cancellationToken);
 		}
 
 		/// <summary>
@@ -371,8 +392,23 @@ namespace PCx.IO.Compression
 
 			if (_CompressStream != null)
 			{
-				_CompressStream.Flush();
+				_CompressStream.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
 			}
+		}
+
+		/// <summary>
+		/// See <see cref="Stream.FlushAsync(CancellationToken)"/> 
+		/// </summary>
+		public override Task FlushAsync(CancellationToken cancellationToken)
+		{
+			EnsureNotDisposed();
+
+			if (_CompressStream != null)
+			{
+				return _CompressStream.FlushAsync(cancellationToken);
+			}
+
+			return Task.CompletedTask;
 		}
 
 		/// <summary>

@@ -24,6 +24,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -57,7 +58,12 @@ namespace PCx.IO.Compression
 
 		public Task SendAsync(Buffer buffer)
 		{
-			return _TargetBlock.SendAsync(buffer);
+			return SendAsync(buffer, CancellationToken.None);
+		}
+
+		public Task SendAsync(Buffer buffer, CancellationToken cancellationToken)
+		{
+			return _TargetBlock.SendAsync(buffer, cancellationToken);
 		}
 
 		public async Task CompleteAsync()
