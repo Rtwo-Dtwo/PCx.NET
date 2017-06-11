@@ -105,9 +105,9 @@ namespace PCx.IO.Compression
 
 		private async Task<bool> ReceiveBufferAsync(CancellationToken cancellationToken)
 		{
-			if (await _DecompressGraph.OutputAvailableAsync().ConfigureAwait(false))
+			if (await _DecompressGraph.OutputAvailableAsync(cancellationToken).ConfigureAwait(false))
 			{
-				_Buffer = await _DecompressGraph.ReceiveAsync().ConfigureAwait(false);
+				_Buffer = await _DecompressGraph.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 
 				_BufferPosition = 0;
 

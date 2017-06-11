@@ -58,12 +58,22 @@ namespace PCx.IO.Compression
 
 		public Task<bool> OutputAvailableAsync()
 		{
-			return _SourceBlock.OutputAvailableAsync();
+			return OutputAvailableAsync(CancellationToken.None);
+		}
+
+		public Task<bool> OutputAvailableAsync(CancellationToken cancellationToken)
+		{
+			return _SourceBlock.OutputAvailableAsync(cancellationToken);
 		}
 
 		public Task<Buffer> ReceiveAsync()
 		{
-			return _SourceBlock.ReceiveAsync();
+			return ReceiveAsync(CancellationToken.None);
+		}
+
+		public Task<Buffer> ReceiveAsync(CancellationToken cancellationToken)
+		{
+			return _SourceBlock.ReceiveAsync(cancellationToken);
 		}
 
 		public async Task CompleteAsync()
