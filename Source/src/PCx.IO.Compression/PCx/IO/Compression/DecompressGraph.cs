@@ -54,6 +54,18 @@ namespace PCx.IO.Compression
 
 		#endregion
 
+		#region Properties
+
+		public Task Completion
+		{
+			get
+			{
+				return Task.WhenAll(_ReadStream, FlushAsync(), _SourceBlock.Completion);
+			}
+		}
+
+		#endregion
+
 		#region Methods
 
 		public Task<bool> OutputAvailableAsync()
@@ -76,16 +88,9 @@ namespace PCx.IO.Compression
 			return _SourceBlock.ReceiveAsync(cancellationToken);
 		}
 
-		public async Task CompleteAsync()
+		public void Complete()
 		{
 			_Cancellation.Cancel();
-
-			await _ReadStream.ConfigureAwait(false);
-
-			await FlushAsync().ConfigureAwait(false);
-
-			await _SourceBlock.Completion.ConfigureAwait(false);
-
 			_Cancellation.Dispose();
 		}
 

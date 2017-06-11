@@ -113,7 +113,9 @@ namespace PCx.IO.Compression
 				buffer.WriteTo(destination, progress);
 			}
 
-			await decompressGraph.CompleteAsync().ConfigureAwait(false);
+			decompressGraph.Complete();
+
+			await decompressGraph.Completion.ConfigureAwait(false);
 
 			progress.Report(1.0);
 		}

@@ -135,7 +135,9 @@ namespace PCx.IO.Compression
 					{
 						try
 						{
-							_DecompressGraph.CompleteAsync().GetAwaiter().GetResult();
+							_DecompressGraph.Complete();
+								
+							_DecompressGraph.Completion.GetAwaiter().GetResult();
 						}
 						finally
 						{
