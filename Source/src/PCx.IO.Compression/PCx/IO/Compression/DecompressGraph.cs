@@ -91,11 +91,6 @@ namespace PCx.IO.Compression
 		{
 			int boundedCapacity = Environment.ProcessorCount * 2;
 
-			var bufferBlock = new BufferBlock<Buffer>(new DataflowBlockOptions
-			{
-				BoundedCapacity = boundedCapacity
-			});
-
 			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => Decompress(buffer), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
@@ -103,12 +98,7 @@ namespace PCx.IO.Compression
 				SingleProducerConstrained = true
 			});
 
-			bufferBlock.LinkTo(decompressBlock, new DataflowLinkOptions()
-			{
-				PropagateCompletion = true
-			});
-
-			targetBlock = bufferBlock;
+			targetBlock = decompressBlock;
 			sourceBlock = decompressBlock;
 		}
 
