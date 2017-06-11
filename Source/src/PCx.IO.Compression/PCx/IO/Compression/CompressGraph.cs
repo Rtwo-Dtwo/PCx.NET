@@ -69,7 +69,7 @@ namespace PCx.IO.Compression
 
 		private static void BuildGraph(Stream stream, CompressionLevel compressionLevel, IProgress<double> progress, out ITargetBlock<Buffer> targetBlock, out IDataflowBlock completionBlock)
 		{
-			int boundedCapacity = Environment.ProcessorCount * 2;
+			int boundedCapacity = Environment.ProcessorCount * 8;
 
 			var compressBlock = new TransformBlock<Buffer, Buffer>(buffer => Compress(buffer, compressionLevel), new ExecutionDataflowBlockOptions
 			{

@@ -89,7 +89,7 @@ namespace PCx.IO.Compression
 
 		private static void BuildGraph(out ITargetBlock<Buffer> targetBlock, out ISourceBlock<Buffer> sourceBlock)
 		{
-			int boundedCapacity = Environment.ProcessorCount * 2;
+			int boundedCapacity = Environment.ProcessorCount * 8;
 
 			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => Decompress(buffer), new ExecutionDataflowBlockOptions
 			{
