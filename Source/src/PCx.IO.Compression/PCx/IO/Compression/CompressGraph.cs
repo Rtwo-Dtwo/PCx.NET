@@ -99,7 +99,7 @@ namespace PCx.IO.Compression
 			{
 				using (var deflate = new DeflateStream(destination, compressionLevel, leaveOpen: true))
 				{
-					buffer.WriteTo(deflate);
+					deflate.Write(buffer.Bytes, 0, buffer.Size);
 				}
 
 				return new Buffer(destination.ToArray(), buffer.Progress);

@@ -109,14 +109,11 @@ namespace PCx.IO.Compression
 			return Empty;
 		}
 
-		public void WriteTo(Stream stream)
-		{
-			WriteTo(stream, new Progress<double>());
-		}
-
 		public void WriteTo(Stream stream, IProgress<double> progress)
 		{
 			stream.Write(_Bytes, 0, _Bytes.Length);
+
+			stream.Flush();
 
 			if (Progress.HasValue)
 			{
