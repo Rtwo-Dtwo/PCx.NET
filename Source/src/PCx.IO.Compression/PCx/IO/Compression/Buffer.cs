@@ -91,15 +91,10 @@ namespace PCx.IO.Compression
 
 		#region Methods
 
-		public static Task<Buffer> ReadFromAsync(Stream stream, int size)
-		{
-			return ReadFromAsync(stream, size, CancellationToken.None);
-		}
-
-		public static async Task<Buffer> ReadFromAsync(Stream stream, int size, CancellationToken cancellationToken)
+		public static Buffer ReadFrom(Stream stream, int size)
 		{
 			var readBytes = new byte[size];
-			int readCount = await stream.ReadAsync(readBytes, 0, readBytes.Length, cancellationToken).ConfigureAwait(false);
+			int readCount = stream.Read(readBytes, 0, readBytes.Length);
 
 			if (readCount == readBytes.Length)
 			{
@@ -116,14 +111,14 @@ namespace PCx.IO.Compression
 			return Empty;
 		}
 
-		public Task WriteToAsync(Stream stream)
+		public void WriteTo(Stream stream)
 		{
-			return WriteToAsync(stream, new Progress<double>());
+			WriteTo(stream, new Progress<double>());
 		}
 
-		public async Task WriteToAsync(Stream stream, IProgress<double> progress)
+		public void WriteTo(Stream stream, IProgress<double> progress)
 		{
-			await stream.WriteAsync(_Bytes, 0, _Bytes.Length).ConfigureAwait(false);
+			stream.Write(_Bytes, 0, _Bytes.Length);
 
 			if (Progress.HasValue)
 			{

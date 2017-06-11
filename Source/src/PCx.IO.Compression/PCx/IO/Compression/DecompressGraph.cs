@@ -96,7 +96,7 @@ namespace PCx.IO.Compression
 				BoundedCapacity = boundedCapacity
 			});
 
-			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => DecompressAsync(buffer), new ExecutionDataflowBlockOptions
+			var decompressBlock = new TransformBlock<Buffer, Buffer>(buffer => Decompress(buffer), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
 				MaxDegreeOfParallelism = Environment.ProcessorCount,
@@ -112,13 +112,13 @@ namespace PCx.IO.Compression
 			sourceBlock = decompressBlock;
 		}
 
-		private static async Task<Buffer> DecompressAsync(Buffer buffer)
+		private static Buffer Decompress(Buffer buffer)
 		{
 			using (var deflate = new DeflateStream(buffer.ToStream(), CompressionMode.Decompress, leaveOpen: false))
 			{
 				using (var destination = new MemoryStream())
 				{
-					await deflate.CopyToAsync(destination).ConfigureAwait(false);
+					deflate.CopyTo(destination);
 
 					return new Buffer(destination.ToArray(), buffer.Progress);
 				}
@@ -145,7 +145,7 @@ namespace PCx.IO.Compression
 						throw new IOException("Source stream is not well-formed");
 					}
 					
-					var buffer = await Buffer.ReadFromAsync(stream, length.Value, cancellationToken).ConfigureAwait(false);
+					var buffer = Buffer.ReadFrom(stream, length.Value);
 
 					if (buffer.Size != length.Value)
 					{

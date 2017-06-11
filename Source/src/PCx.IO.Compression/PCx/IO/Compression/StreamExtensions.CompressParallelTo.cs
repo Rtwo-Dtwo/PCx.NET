@@ -128,7 +128,7 @@ namespace PCx.IO.Compression
 
 			while (true)
 			{
-				var buffer = await Buffer.ReadFromAsync(source, bufferSize).ConfigureAwait(false);
+				var buffer = Buffer.ReadFrom(source, bufferSize);
 
 				if (buffer.Size == 0)
 				{

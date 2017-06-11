@@ -81,7 +81,7 @@ namespace PCx.IO.Compression
 				BoundedCapacity = boundedCapacity
 			});
 
-			var compressBlock = new TransformBlock<Buffer, Buffer>(buffer => CompressAsync(buffer, compressionLevel), new ExecutionDataflowBlockOptions
+			var compressBlock = new TransformBlock<Buffer, Buffer>(buffer => Compress(buffer, compressionLevel), new ExecutionDataflowBlockOptions
 			{
 				BoundedCapacity = boundedCapacity,
 				MaxDegreeOfParallelism = Environment.ProcessorCount,
@@ -97,13 +97,13 @@ namespace PCx.IO.Compression
 			sourceBlock = compressBlock;
 		}
 
-		private static async Task<Buffer> CompressAsync(Buffer buffer, CompressionLevel compressionLevel)
+		private static Buffer Compress(Buffer buffer, CompressionLevel compressionLevel)
 		{
 			using (var destination = new MemoryStream())
 			{
 				using (var deflate = new DeflateStream(destination, compressionLevel, leaveOpen: true))
 				{
-					await buffer.WriteToAsync(deflate).ConfigureAwait(false);
+					buffer.WriteTo(deflate);
 				}
 
 				return new Buffer(destination.ToArray(), buffer.Progress);
@@ -119,7 +119,7 @@ namespace PCx.IO.Compression
 				await WriteAsync(stream, buffer.Size).ConfigureAwait(false);
 				await WriteAsync(stream, ~buffer.Size).ConfigureAwait(false);
 
-				await buffer.WriteToAsync(stream, progress).ConfigureAwait(false);
+				buffer.WriteTo(stream, progress);
 			}
 		}
 
