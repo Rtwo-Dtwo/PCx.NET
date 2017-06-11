@@ -68,19 +68,9 @@ namespace PCx.IO.Compression
 
 		#region Methods
 
-		public Task<bool> OutputAvailableAsync()
-		{
-			return OutputAvailableAsync(CancellationToken.None);
-		}
-
 		public Task<bool> OutputAvailableAsync(CancellationToken cancellationToken)
 		{
 			return _SourceBlock.OutputAvailableAsync(cancellationToken);
-		}
-
-		public Task<Buffer> ReceiveAsync()
-		{
-			return ReceiveAsync(CancellationToken.None);
 		}
 
 		public Task<Buffer> ReceiveAsync(CancellationToken cancellationToken)

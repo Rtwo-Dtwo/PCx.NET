@@ -184,12 +184,12 @@ namespace PCx.IO.Compression.Tests
 		[Fact]
 		public static async Task DecompressParallel_ArgumentValidation()
 		{
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, Stream.Null, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(null, new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(Stream.Null, progress: null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.DecompressParallelToAsync(null, Stream.Null, new Progress<double>(), CancellationToken.None));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(null, new Progress<double>(), CancellationToken.None));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.DecompressParallelToAsync(Stream.Null, null, CancellationToken.None));
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.DecompressParallelToAsync(Stream.Null, new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.DecompressParallelToAsync(ClosedStream, new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.DecompressParallelToAsync(Stream.Null, new Progress<double>(), CancellationToken.None));
+			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.DecompressParallelToAsync(ClosedStream, new Progress<double>(), CancellationToken.None));
 		}
 
 		#endregion
