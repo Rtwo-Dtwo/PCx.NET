@@ -35,9 +35,7 @@ namespace PCx.IO.Compression
 
 		private readonly ITargetBlock<Buffer> _TargetBlock;
 
-		private readonly ISourceBlock<Buffer> _SourceBlock;
-
-		private readonly Task _WriteStream;
+		private readonly IDataflowBlock _CompletionBlock;
 
 		#endregion
 
@@ -50,9 +48,7 @@ namespace PCx.IO.Compression
 
 		public CompressGraph(Stream stream, CompressionLevel compressionLevel, IProgress<double> progress)
 		{
-			BuildGraph(compressionLevel, out _TargetBlock, out _SourceBlock);
-
-			_WriteStream = WriteAsync(stream, progress);
+			BuildGraph(stream, compressionLevel, progress, out _TargetBlock, out _CompletionBlock);
 		}
 
 		#endregion
@@ -68,19 +64,12 @@ namespace PCx.IO.Compression
 		{
 			_TargetBlock.Complete();
 
-			await _SourceBlock.Completion.ConfigureAwait(false);
-
-			await _WriteStream.ConfigureAwait(false);
+			await _CompletionBlock.Completion.ConfigureAwait(false);
 		}
 
-		private static void BuildGraph(CompressionLevel compressionLevel, out ITargetBlock<Buffer> targetBlock, out ISourceBlock<Buffer> sourceBlock)
+		private static void BuildGraph(Stream stream, CompressionLevel compressionLevel, IProgress<double> progress, out ITargetBlock<Buffer> targetBlock, out IDataflowBlock completionBlock)
 		{
 			int boundedCapacity = Environment.ProcessorCount * 2;
-
-			var bufferBlock = new BufferBlock<Buffer>(new DataflowBlockOptions
-			{
-				BoundedCapacity = boundedCapacity
-			});
 
 			var compressBlock = new TransformBlock<Buffer, Buffer>(buffer => Compress(buffer, compressionLevel), new ExecutionDataflowBlockOptions
 			{
@@ -89,13 +78,19 @@ namespace PCx.IO.Compression
 				SingleProducerConstrained = true
 			});
 
-			bufferBlock.LinkTo(compressBlock, new DataflowLinkOptions()
+			var writeBlock = new ActionBlock<Buffer>(buffer => Write(buffer, stream, progress), new ExecutionDataflowBlockOptions
+			{
+				BoundedCapacity = boundedCapacity,
+				SingleProducerConstrained = true
+			});
+
+			compressBlock.LinkTo(writeBlock, new DataflowLinkOptions
 			{
 				PropagateCompletion = true
 			});
 
-			targetBlock = bufferBlock;
-			sourceBlock = compressBlock;
+			targetBlock = compressBlock;
+			completionBlock = writeBlock;
 		}
 
 		private static Buffer Compress(Buffer buffer, CompressionLevel compressionLevel)
@@ -111,16 +106,11 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private async Task WriteAsync(Stream stream, IProgress<double> progress)
+		private static void Write(Buffer buffer, Stream stream, IProgress<double> progress)
 		{
-			while (await _SourceBlock.OutputAvailableAsync().ConfigureAwait(false))
-			{
-				var buffer = await _SourceBlock.ReceiveAsync().ConfigureAwait(false);
+			WriteHeader(stream, buffer.Size);
 
-				WriteHeader(stream, buffer.Size);
-
-				buffer.WriteTo(stream, progress);
-			}
+			buffer.WriteTo(stream, progress);
 		}
 
 		private static void WriteHeader(Stream stream, int length)
