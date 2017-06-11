@@ -23,6 +23,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PCx.IO.Compression
 {
@@ -50,7 +52,7 @@ namespace PCx.IO.Compression
 
 		#region Methods
 
-		public int Read(byte[] buffer, int offset, int count)
+		public async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
 			InitializeGraph();
 
@@ -58,7 +60,7 @@ namespace PCx.IO.Compression
 
 			while (true)
 			{
-				if ((_Buffer.Size == 0) && !ReceiveBuffer())
+				if ((_Buffer.Size == 0) && !await ReceiveBufferAsync(cancellationToken).ConfigureAwait(false))
 				{
 					break;
 				}
@@ -101,11 +103,11 @@ namespace PCx.IO.Compression
 			}
 		}
 
-		private bool ReceiveBuffer()
+		private async Task<bool> ReceiveBufferAsync(CancellationToken cancellationToken)
 		{
-			if (_DecompressGraph.OutputAvailableAsync().GetAwaiter().GetResult())
+			if (await _DecompressGraph.OutputAvailableAsync().ConfigureAwait(false))
 			{
-				_Buffer = _DecompressGraph.ReceiveAsync().GetAwaiter().GetResult();
+				_Buffer = await _DecompressGraph.ReceiveAsync().ConfigureAwait(false);
 
 				_BufferPosition = 0;
 

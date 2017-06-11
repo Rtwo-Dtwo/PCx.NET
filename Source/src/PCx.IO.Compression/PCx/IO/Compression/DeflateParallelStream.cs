@@ -342,7 +342,26 @@ namespace PCx.IO.Compression
 			EnsureNotDisposed();
 			EnsureDecompressionMode();
 
-			return _DecompressStream.Read(buffer, offset, count);
+			return _DecompressStream.ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
+		}
+
+		/// <summary>
+		/// See <see cref="Stream.ReadAsync(byte[], int, int, CancellationToken)"/> 
+		/// </summary>
+		public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		{
+			#region Contracts
+
+			ValidateParameters(buffer, offset, count);
+
+			Contract.EndContractBlock();
+
+			#endregion
+
+			EnsureNotDisposed();
+			EnsureDecompressionMode();
+
+			return _DecompressStream.ReadAsync(buffer, offset, count, cancellationToken);
 		}
 
 		/// <summary>
