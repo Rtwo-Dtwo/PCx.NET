@@ -100,7 +100,7 @@ namespace PCx.IO.Compression.Tests
 
 			var data = GenerateData(1024, 1088);
 
-			var progress = new Progress();
+			var progress = new CountingProgress();
 
 			using (var source = new MemoryStream(data))
 			{
@@ -181,7 +181,7 @@ namespace PCx.IO.Compression.Tests
 
 			var data = GenerateData(1024, 1088);
 
-			var progress = new Progress();
+			var progress = new CountingProgress();
 
 			using (var source = new MemoryStream(data))
 			{

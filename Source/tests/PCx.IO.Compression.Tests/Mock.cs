@@ -127,7 +127,7 @@ namespace PCx.IO.Compression.Tests
 
 		#region Progress
 
-		public sealed class Progress : IProgress<double>
+		public sealed class CountingProgress : IProgress<double>
 		{
 			#region Fields
 
