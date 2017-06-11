@@ -24,6 +24,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Xunit;
@@ -109,14 +110,14 @@ namespace PCx.IO.Compression.Tests
 		[Fact]
 		public static async Task CompressParallel_ArgumentValidation()
 		{
-			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(null, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, bufferSize: 1, progress: null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => StreamExtensions.CompressParallelToAsync(null, Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, null, CancellationToken.None));
 
-			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
-			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.CompressParallelToAsync(ClosedStream, CompressionLevel.NoCompression, bufferSize: 1, progress: new Progress<double>()));
+			await Assert.ThrowsAsync<NotSupportedException>(() => ClosedStream.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
+			await Assert.ThrowsAsync<NotSupportedException>(() => Stream.Null.CompressParallelToAsync(ClosedStream, CompressionLevel.NoCompression, 1, new Progress<double>(), CancellationToken.None));
 
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, bufferSize: -1, progress: new Progress<double>()));
+			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Stream.Null.CompressParallelToAsync(Stream.Null, CompressionLevel.NoCompression, -1, new Progress<double>(), CancellationToken.None));
 		}
 
 		[Theory]

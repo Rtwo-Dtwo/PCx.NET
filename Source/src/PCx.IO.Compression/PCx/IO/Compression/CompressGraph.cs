@@ -68,11 +68,6 @@ namespace PCx.IO.Compression
 
 		#region Methods
 
-		public Task SendAsync(Buffer buffer)
-		{
-			return SendAsync(buffer, CancellationToken.None);
-		}
-
 		public Task SendAsync(Buffer buffer, CancellationToken cancellationToken)
 		{
 			return _TargetBlock.SendAsync(buffer, cancellationToken);
