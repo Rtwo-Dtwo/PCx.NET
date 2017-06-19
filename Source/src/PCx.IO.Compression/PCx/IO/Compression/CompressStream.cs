@@ -104,10 +104,10 @@ namespace PCx.IO.Compression
 		{
 			if (_CompressGraph != null)
 			{
+				await SendBufferAsync(cancellationToken).ConfigureAwait(false);
+
 				try
 				{
-					await SendBufferAsync(cancellationToken).ConfigureAwait(false);
-
 					_CompressGraph.Complete();
 
 					await _CompressGraph.Completion.ConfigureAwait(false);
