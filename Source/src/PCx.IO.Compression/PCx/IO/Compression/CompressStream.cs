@@ -100,9 +100,23 @@ namespace PCx.IO.Compression
 			Debug.Assert(writeCount == count);
 		}
 
-		public Task FlushAsync(CancellationToken cancellationToken)
+		public async Task FlushAsync(CancellationToken cancellationToken)
 		{
-			return SendBufferAsync(cancellationToken);
+			if (_CompressGraph != null)
+			{
+				await SendBufferAsync(cancellationToken).ConfigureAwait(false);
+
+				try
+				{
+					_CompressGraph.Complete();
+
+					await _CompressGraph.Completion.ConfigureAwait(false);
+				}
+				finally
+				{
+					_CompressGraph = null;
+				}
+			}
 		}
 
 		private void InitializeGraph()
@@ -146,21 +160,7 @@ namespace PCx.IO.Compression
 			{
 				try
 				{
-					if (_CompressGraph != null)
-					{
-						try
-						{
-							SendBufferAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-							_CompressGraph.Complete();
-								
-							_CompressGraph.Completion.GetAwaiter().GetResult();
-						}
-						finally
-						{
-							_CompressGraph = null;
-						}
-					}
+					FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
 				}
 				finally
 				{

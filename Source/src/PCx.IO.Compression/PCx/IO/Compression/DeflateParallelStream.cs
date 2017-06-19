@@ -412,22 +412,24 @@ namespace PCx.IO.Compression
 			if (_CompressStream != null)
 			{
 				_CompressStream.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+				_Stream.Flush();
 			}
 		}
 
 		/// <summary>
 		/// See <see cref="Stream.FlushAsync(CancellationToken)"/> 
 		/// </summary>
-		public override Task FlushAsync(CancellationToken cancellationToken)
+		public override async Task FlushAsync(CancellationToken cancellationToken)
 		{
 			EnsureNotDisposed();
 
 			if (_CompressStream != null)
 			{
-				return _CompressStream.FlushAsync(cancellationToken);
-			}
+				await _CompressStream.FlushAsync(cancellationToken).ConfigureAwait(false);
 
-			return Task.CompletedTask;
+				await _Stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+			}
 		}
 
 		/// <summary>
